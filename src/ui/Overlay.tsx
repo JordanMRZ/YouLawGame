@@ -1,0 +1,352 @@
+import { useEffect, useState } from 'react'
+import { audio } from '../audio/audioManager'
+import { getLevel, levelCatalog } from '../data/levels'
+import { formatTime } from '../game/scoring'
+import { useGameStore } from '../store/gameStore'
+
+export function Overlay() {
+  const phase = useGameStore((s) => s.phase)
+
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      const state = useGameStore.getState()
+      if (event.code === 'Escape') {
+        if (state.phase === 'play') state.setPhase('paused')
+        else if (state.phase === 'paused') state.setPhase('play')
+      }
+      if (state.phase === 'hub') {
+        if (event.code === 'ArrowRight' || event.code === 'KeyD') {
+          const next = Math.min(10, state.selectedLevel + 1)
+          if (next <= state.save.unlockedLevel) state.setSelectedLevel(next)
+        }
+        if (event.code === 'ArrowLeft' || event.code === 'KeyA') {
+          state.setSelectedLevel(Math.max(1, state.selectedLevel - 1))
+        }
+        if (event.code === 'Enter' || event.code === 'Space') {
+          if (state.selectedLevel <= state.save.unlockedLevel) state.startLevel(state.selectedLevel)
+        }
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
+
+  return (
+    <div className="overlay">
+      {phase === 'hub' && <HubChrome />}
+      {phase !== 'hub' && phase !== 'intro' && <HUD />}
+      {phase === 'intro' && <IntroCard />}
+      {phase === 'countdown' && <Countdown />}
+      {phase === 'paused' && <PauseCard />}
+      {phase === 'results' && <ResultsCard />}
+      {phase === 'failed' && <FailCard />}
+      {phase === 'credits' && <CreditsCard />}
+    </div>
+  )
+}
+
+function HubChrome() {
+  const selected = useGameStore((s) => s.selectedLevel)
+  const save = useGameStore((s) => s.save)
+  const customizeOpen = useGameStore((s) => s.customizeOpen)
+  const settingsOpen = useGameStore((s) => s.settingsOpen)
+  const meta = levelCatalog[selected - 1]
+  const record = save.levels[String(selected)]
+  const locked = selected > save.unlockedLevel
+
+  return (
+    <>
+      <div className="hub-top">
+        <div>
+          <p className="kicker">Single-player obstacle course</p>
+          <h1>Word Bridge 3D</h1>
+        </div>
+        <div className="hub-actions">
+          <span className="xp-chip">{save.xp} XP</span>
+          <button type="button" onClick={() => useGameStore.getState().setCustomizeOpen(true)}>
+            Style
+          </button>
+          <button type="button" onClick={() => useGameStore.getState().setSettingsOpen(true)}>
+            Audio
+          </button>
+        </div>
+      </div>
+      <div className="hub-card">
+        <p className="kicker">{meta?.hubLabel}</p>
+        <h2>
+          Level {String(selected).padStart(2, '0')} — {meta?.name}
+        </h2>
+        <p>{meta?.subtitle}</p>
+        <p className="theme">{meta?.theme}</p>
+        <p className="stars">{starLine(record?.stars ?? 0)}</p>
+        {record && <p className="muted">Best {formatTime(record.bestTime)}</p>}
+        <button
+          type="button"
+          className="primary"
+          disabled={locked}
+          onClick={() => {
+            audio.unlock()
+            audio.startMusic()
+            useGameStore.getState().startLevel(selected)
+          }}
+        >
+          {locked ? 'Locked' : 'Play'}
+        </button>
+        <p className="hint">A / D select · Enter play · Click an island</p>
+      </div>
+      {customizeOpen && <CustomizePanel />}
+      {settingsOpen && <SettingsPanel />}
+    </>
+  )
+}
+
+function HUD() {
+  const lives = useGameStore((s) => s.lives)
+  const streak = useGameStore((s) => s.streak)
+  const elapsed = useGameStore((s) => s.elapsed)
+  const prompt = useGameStore((s) => s.prompt)
+  const toast = useGameStore((s) => s.toast)
+  const xpPopup = useGameStore((s) => s.xpPopup)
+  const phase = useGameStore((s) => s.phase)
+  if (phase === 'results' || phase === 'failed' || phase === 'credits') return null
+
+  return (
+    <>
+      <div className="hud-top">
+        <div className="lives">{'❤️'.repeat(Math.max(0, lives))}{'🖤'.repeat(Math.max(0, 3 - lives))}</div>
+        <div className={`streak ${streak >= 2 ? 'hot' : ''}`}>{streak >= 2 ? `STREAK x${streak}` : 'STREAK x0'}</div>
+        <div className="time">{formatTime(elapsed)}</div>
+      </div>
+      {prompt && <div className="prompt">{prompt}</div>}
+      {toast && <div className="toast">{toast}</div>}
+      {xpPopup && <div className="xp-pop">{xpPopup}</div>}
+    </>
+  )
+}
+
+function IntroCard() {
+  const levelId = useGameStore((s) => s.levelId)
+  const level = getLevel(levelId)
+  return (
+    <div className="modal">
+      <p className="kicker">{level.hubLabel}</p>
+      <h2>
+        Level {String(level.id).padStart(2, '0')}
+      </h2>
+      <h3>{level.name}</h3>
+      <p>{level.subtitle}</p>
+      <p className="theme">{level.theme}</p>
+      <p className="hint">W run · A D strafe · Space jump · Shift sprint · Esc pause</p>
+      <button type="button" className="primary" onClick={() => {
+        (document.activeElement as HTMLElement | null)?.blur()
+        useGameStore.getState().setPhase('countdown')
+      }}>
+        Start
+      </button>
+      <button type="button" onClick={() => useGameStore.getState().backToHub()}>
+        Hub
+      </button>
+    </div>
+  )
+}
+
+function Countdown() {
+  const [value, setValue] = useState('3')
+  useEffect(() => {
+    const steps = ['3', '2', '1', 'GO!']
+    let i = 0
+    audio.play('countdown')
+    const id = window.setInterval(() => {
+      i += 1
+      if (i >= steps.length) {
+        window.clearInterval(id)
+        audio.play('go')
+        useGameStore.getState().setPhase('play')
+        return
+      }
+      const next = steps[i] ?? 'GO!'
+      setValue(next)
+      audio.play(next === 'GO!' ? 'go' : 'countdown')
+    }, 700)
+    return () => window.clearInterval(id)
+  }, [])
+  return <div className="countdown">{value}</div>
+}
+
+function PauseCard() {
+  return (
+    <div className="modal">
+      <h2>Paused</h2>
+      <button type="button" className="primary" onClick={() => useGameStore.getState().setPhase('play')}>
+        Resume
+      </button>
+      <button type="button" onClick={() => useGameStore.getState().backToHub()}>
+        Hub
+      </button>
+    </div>
+  )
+}
+
+function ResultsCard() {
+  const results = useGameStore((s) => s.results)
+  const levelId = useGameStore((s) => s.levelId)
+  if (!results) return null
+  return (
+    <div className="modal">
+      <p className="kicker">LEVEL COMPLETE</p>
+      <h2>{starLine(results.stars)}</h2>
+      <ul className="stats">
+        <li>Accuracy {Math.round(results.accuracy * 100)}%</li>
+        <li>Time {formatTime(results.time)}</li>
+        <li>Mistakes {results.mistakes}</li>
+        <li>Best Streak x{results.bestStreak}</li>
+      </ul>
+      <p className="xp-chip">+{results.xp} XP</p>
+      <div className="row">
+        {levelId < 10 && (
+          <button type="button" className="primary" onClick={() => useGameStore.getState().startLevel(levelId + 1)}>
+            Next level
+          </button>
+        )}
+        <button type="button" onClick={() => useGameStore.getState().startLevel(levelId)}>
+          Replay
+        </button>
+        <button type="button" onClick={() => useGameStore.getState().backToHub()}>
+          Hub
+        </button>
+      </div>
+    </div>
+  )
+}
+
+function FailCard() {
+  const levelId = useGameStore((s) => s.levelId)
+  return (
+    <div className="modal">
+      <h2>LEVEL FAILED</h2>
+      <p>Three lives gone. Jump back in.</p>
+      <div className="row">
+        <button type="button" className="primary" onClick={() => useGameStore.getState().startLevel(levelId)}>
+          Restart
+        </button>
+        <button type="button" onClick={() => useGameStore.getState().backToHub()}>
+          Hub
+        </button>
+      </div>
+    </div>
+  )
+}
+
+function CreditsCard() {
+  const results = useGameStore((s) => s.results)
+  const save = useGameStore((s) => s.save)
+  if (!results) return null
+  return (
+    <div className="modal wide">
+      <p className="kicker">CONGRATULATIONS</p>
+      <h2>ENGLISH BRIDGE</h2>
+      <h3>10 / 10 LEVELS</h3>
+      <ul className="stats">
+        <li>Run time {formatTime(results.time)}</li>
+        <li>Accuracy {Math.round(results.accuracy * 100)}%</li>
+        <li>Mistakes {results.mistakes}</li>
+        <li>Best streak x{results.bestStreak}</li>
+        <li>Stars {starLine(results.stars)}</li>
+        <li>Career {save.totals.stars} stars · {save.xp} XP</li>
+      </ul>
+      <p className="xp-chip">+{results.xp} XP</p>
+      <div className="row">
+        <button type="button" className="primary" onClick={() => useGameStore.getState().backToHub()}>
+          Return to hub
+        </button>
+      </div>
+    </div>
+  )
+}
+
+function CustomizePanel() {
+  const cosmetics = useGameStore((s) => s.save.cosmetics)
+  const shirts = ['#1f6f8b', '#2a9d8f', '#9b2226', '#343a40', '#4c6ef5']
+  return (
+    <div className="modal">
+      <h2>Look</h2>
+      <p className="muted">Cosmetic only. No stat changes.</p>
+      <div className="swatches">
+        {shirts.map((color) => (
+          <button
+            key={color}
+            type="button"
+            className={`swatch ${cosmetics.shirt === color ? 'on' : ''}`}
+            style={{ background: color }}
+            onClick={() => useGameStore.getState().updateCosmetics({ shirt: color })}
+          />
+        ))}
+      </div>
+      <label className="check">
+        <input
+          type="checkbox"
+          checked={cosmetics.glasses}
+          onChange={(e) => useGameStore.getState().updateCosmetics({ glasses: e.target.checked })}
+        />
+        Glasses
+      </label>
+      <label className="check">
+        <input
+          type="checkbox"
+          checked={cosmetics.backpack}
+          onChange={(e) => useGameStore.getState().updateCosmetics({ backpack: e.target.checked })}
+        />
+        Backpack
+      </label>
+      <button type="button" onClick={() => useGameStore.getState().setCustomizeOpen(false)}>
+        Close
+      </button>
+    </div>
+  )
+}
+
+function SettingsPanel() {
+  const settings = useGameStore((s) => s.save.settings)
+  return (
+    <div className="modal">
+      <h2>Audio</h2>
+      <label className="check">
+        <input
+          type="checkbox"
+          checked={settings.muted}
+          onChange={(e) => useGameStore.getState().updateSettings({ muted: e.target.checked })}
+        />
+        Mute
+      </label>
+      <label>
+        SFX
+        <input
+          type="range"
+          min={0}
+          max={1}
+          step={0.05}
+          value={settings.sfx}
+          onChange={(e) => useGameStore.getState().updateSettings({ sfx: Number(e.target.value) })}
+        />
+      </label>
+      <label>
+        Music
+        <input
+          type="range"
+          min={0}
+          max={1}
+          step={0.05}
+          value={settings.music}
+          onChange={(e) => useGameStore.getState().updateSettings({ music: Number(e.target.value) })}
+        />
+      </label>
+      <button type="button" onClick={() => useGameStore.getState().setSettingsOpen(false)}>
+        Close
+      </button>
+    </div>
+  )
+}
+
+function starLine(stars: number) {
+  return `${'⭐'.repeat(stars)}${'☆'.repeat(Math.max(0, 5 - stars))}`
+}
