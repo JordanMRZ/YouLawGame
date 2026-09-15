@@ -46,40 +46,56 @@ export function LevelWorld({ level }: { level: LevelDef }) {
   )
 }
 
+const SPEECH_COOLDOWN = 18000
+
 function ChallengeDirector({ challenges }: { challenges: ChallengeDef[] }) {
-  const last = useRef<string | null>(null)
+  const inside = useRef<string | null>(null)
+  const spokenAt = useRef<Record<string, number>>({})
+
   useFrame(() => {
     const z = playerRuntime.position.z
     let current: ChallengeDef | undefined
+    let best = 99
     for (const challenge of challenges) {
       const dz = challenge.origin[2] - z
-      if (dz > -7 && dz < 18) current = challenge
+      const staying = inside.current === challenge.id
+      const inZone = staying ? dz < 16 && dz > -9 : dz < 11 && dz > -4
+      if (!inZone) continue
+      const dist = Math.abs(dz)
+      if (dist < best) {
+        best = dist
+        current = challenge
+      }
     }
+
     const id = current?.id ?? null
-    if (id === last.current) return
-    last.current = id
+    if (id === inside.current) return
+    inside.current = id
+
     if (!current) {
       useGameStore.getState().setPrompt(null)
       useGameStore.getState().setActiveChallenge(null)
       useGameStore.getState().setCoachLine(null)
       return
     }
+
     const hide = Boolean(current.hideSentence || current.type === 'listening')
     useGameStore.getState().setPrompt(hide ? 'Listen...' : (current.sentence ?? 'Choose a path'))
     useGameStore.getState().setActiveChallenge(current.id)
-    const coach = hide
-      ? 'Escucha con atención y pisa la plataforma correcta.'
-      : `Pisa la plataforma correcta. ${current.sentence ?? ''}`
+    const coach = hide ? 'Escucha con atención.' : 'Elige la palabra correcta.'
     useGameStore.getState().setCoachLine(coach)
+
+    const now = performance.now()
+    const lastSpoken = spokenAt.current[current.id] ?? 0
+    if (now - lastSpoken < SPEECH_COOLDOWN) return
+    spokenAt.current[current.id] = now
+
     if (current.type === 'listening' && current.audioText) {
       audio.speakGuide(coach)
-      window.setTimeout(() => audio.playListening(current.audioKey, current.audioText ?? ''), 1800)
-    } else {
-      audio.speakGuide(coach)
-      if (current.sentence) {
-        window.setTimeout(() => audio.speakEnglish(current.sentence ?? ''), 1700)
-      }
+      window.setTimeout(() => audio.playListening(current.audioKey, current.audioText ?? ''), 1400)
+      return
     }
+    if (current.sentence) audio.speakEnglish(current.sentence)
   })
   return null
 }

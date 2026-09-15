@@ -10,9 +10,9 @@ export const level1Tutorial: TutorialStep[] = [
   {
     kicker: 'Tutorial',
     title: 'Así se juega',
-    body: 'Word Bridge 3D es un recorrido. Avanzas, saltas obstáculos y eliges la palabra correcta pisando una plataforma. No hay menú de quiz: la respuesta es el camino.',
+    body: 'You Law Game es un recorrido. Avanzas, saltas obstáculos y eliges la palabra correcta. No hay menú de quiz: la respuesta es el camino.',
     keys: 'Sigue las instrucciones en voz alta',
-    voice: 'Hola. Soy tu guía. Word Bridge es un recorrido. Avanzas, saltas y eliges la palabra correcta pisando una plataforma. No hay quiz en pantalla: la respuesta es el camino.',
+    voice: 'Hola. Soy tu guía. You Law Game es un recorrido. Avanzas, saltas y eliges la palabra correcta. No hay quiz en pantalla: la respuesta es el camino.',
   },
   {
     kicker: 'Moverse',
@@ -30,10 +30,10 @@ export const level1Tutorial: TutorialStep[] = [
   },
   {
     kicker: 'Inglés',
-    title: 'Pisa la respuesta',
-    body: 'Cuando llegues a una pregunta, aparece la frase y un cronómetro. Camina y pisa la plataforma de la palabra correcta. Si pasas de largo o eliges mal, te explico por qué.',
-    keys: 'Pisa la plataforma · no pases de largo',
-    voice: 'Cuando llegues a una pregunta, verás la frase y un cronómetro. Pisa la plataforma de la palabra correcta. Si pasas de largo o te equivocas, te explico por qué.',
+    title: 'Elige la palabra',
+    body: 'Cuando llegues a una pregunta, aparece la frase y un cronómetro. Camina hacia la palabra correcta. Si te equivocas o te pasas, te explico por qué.',
+    keys: 'Elige la palabra · no pases de largo',
+    voice: 'Cuando llegues a una pregunta, verás la frase y un cronómetro. Elige la palabra correcta. Si te pasas o te equivocas, te explico por qué.',
   },
   {
     kicker: 'Progreso',

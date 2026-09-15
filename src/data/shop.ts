@@ -85,16 +85,16 @@ export const shopCatalog: ShopItem[] = [
   { id: 'watch-off', name: 'Sin reloj', category: 'extra', price: 0, patch: { watch: false } },
 ]
 
-export const shopCategories: { id: ShopItem['category']; label: string }[] = [
-  { id: 'skin', label: 'Piel' },
-  { id: 'hair', label: 'Cabello' },
-  { id: 'shirt', label: 'Playera' },
-  { id: 'pants', label: 'Pantalón' },
-  { id: 'shoes', label: 'Zapatos' },
-  { id: 'glasses', label: 'Lentes' },
-  { id: 'hat', label: 'Sombrero' },
-  { id: 'pack', label: 'Mochila' },
-  { id: 'extra', label: 'Extras' },
+export const shopCategories: { id: ShopItem['category']; label: string; icon: string }[] = [
+  { id: 'skin', label: 'Piel', icon: '✋' },
+  { id: 'hair', label: 'Cabello', icon: '💇' },
+  { id: 'shirt', label: 'Playera', icon: '👕' },
+  { id: 'pants', label: 'Pantalón', icon: '👖' },
+  { id: 'shoes', label: 'Zapatos', icon: '👟' },
+  { id: 'glasses', label: 'Lentes', icon: '👓' },
+  { id: 'hat', label: 'Sombrero', icon: '🧢' },
+  { id: 'pack', label: 'Mochila', icon: '🎒' },
+  { id: 'extra', label: 'Extras', icon: '✨' },
 ]
 
 export function itemById(id: string) {
@@ -103,4 +103,20 @@ export function itemById(id: string) {
 
 export function isEquipped(cosmetics: Cosmetics, item: ShopItem) {
   return Object.entries(item.patch).every(([key, value]) => cosmetics[key as keyof Cosmetics] === value)
+}
+
+export function itemSwatch(item: ShopItem) {
+  const patch = item.patch
+  return (
+    item.swatch ??
+    patch.skin ??
+    patch.hair ??
+    patch.shirt ??
+    patch.pants ??
+    patch.shoes ??
+    (patch.glasses === 'sun' ? '#1b1b1b' : patch.glasses === 'round' ? '#7ec8f5' : patch.glasses === 'square' ? '#1f6f8b' : undefined) ??
+    (patch.hat === 'cap' ? '#1f6f8b' : patch.hat === 'beanie' ? '#3ee0b3' : patch.hat === 'bow' ? '#ff6b9d' : undefined) ??
+    (patch.backpack === 'pack' ? '#2e4a62' : patch.backpack === 'satchel' ? '#8d6e4c' : undefined) ??
+    (patch.scarf ? '#d64545' : patch.watch ? '#ffd166' : '#d7e8f3')
+  )
 }

@@ -81,14 +81,15 @@ function HubChrome() {
 
   return (
     <>
+      {!shopOpen && (
       <div className="hub-top">
-        <div>
-          <p className="kicker">Single-player obstacle course</p>
-          <h1>Word Bridge 3D</h1>
+        <div className="hub-brand">
+          <p className="kicker">Aventura de inglés</p>
+          <h1>You Law Game</h1>
         </div>
         <div className="hub-actions">
           <span className="xp-chip">{save.wallet} 🪙</span>
-          <span className="xp-chip">{save.xp} XP</span>
+          <span className="xp-chip xp">{save.xp} XP</span>
           <button type="button" onClick={() => useGameStore.getState().setShopOpen(true)}>
             Tienda
           </button>
@@ -97,19 +98,23 @@ function HubChrome() {
           </button>
         </div>
       </div>
+      )}
       {!shopOpen && (
       <div className="hub-card">
-        <p className="kicker">{meta?.hubLabel}</p>
-        <h2>
-          Level {String(selected).padStart(2, '0')} — {meta?.name}
-        </h2>
-        <p>{meta?.subtitle}</p>
+        <div className="hub-card-head">
+          <span className="hub-level-no">{String(selected).padStart(2, '0')}</span>
+          <div>
+            <p className="kicker">{meta?.hubLabel}</p>
+            <h2>{meta?.name}</h2>
+          </div>
+        </div>
+        <p className="hub-sub">{meta?.subtitle}</p>
         <p className="theme">{meta?.theme}</p>
         <p className="stars">{starLine(record?.stars ?? 0)}</p>
-        {record && <p className="muted">Best {formatTime(record.bestTime)}</p>}
+        {record && <p className="muted">Mejor {formatTime(record.bestTime)}</p>}
         <button
           type="button"
-          className="primary"
+          className="primary hub-play"
           disabled={locked}
           onClick={() => {
             audio.unlock()
@@ -117,9 +122,9 @@ function HubChrome() {
             useGameStore.getState().startLevel(selected)
           }}
         >
-          {locked ? 'Locked' : 'Play'}
+          {locked ? 'Bloqueado' : 'Jugar'}
         </button>
-        <p className="hint">A / D select · Enter play · Click an island</p>
+        <p className="hint">A / D elige · Enter jugar · Clic en una plataforma</p>
       </div>
       )}
       {shopOpen && <ShopPanel />}
@@ -167,7 +172,7 @@ function IntroCard() {
   useEffect(() => {
     audio.unlock()
     audio.speakGuide(
-      `Nivel ${level.id}. ${level.name}. ${level.subtitle}. W avanza, espacio salta, y pisa la plataforma correcta.`,
+      `Nivel ${level.id}. ${level.name}. ${level.subtitle}. W avanza y espacio salta.`,
     )
     return () => audio.stopSpeech()
   }, [level.id, level.name, level.subtitle])

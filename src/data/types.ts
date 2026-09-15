@@ -159,6 +159,7 @@ export interface ShopItem {
   category: ShopCategory
   price: number
   patch: Partial<Cosmetics>
+  swatch?: string
 }
 
 export interface LevelRecord {
