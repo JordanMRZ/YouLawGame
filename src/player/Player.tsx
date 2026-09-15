@@ -109,7 +109,9 @@ export function Player({ level }: { level: LevelDef }) {
     let iz = 0
     if (!stunned) {
       if (k.has('KeyW') || k.has('ArrowUp')) iz += 1
-      if (k.has('KeyS') || k.has('ArrowDown')) iz -= 0.4
+      if (k.has('KeyS') || k.has('ArrowDown')) {
+        if (origin.z > useGameStore.getState().minZ + 0.15) iz -= 0.4
+      }
       if (k.has('KeyA') || k.has('ArrowLeft')) ix += 1
       if (k.has('KeyD') || k.has('ArrowRight')) ix -= 1
       if (level.autoRun) iz = Math.max(iz, 1)
@@ -137,6 +139,14 @@ export function Player({ level }: { level: LevelDef }) {
     }
 
     body.setLinvel({ x: nextX, y: nextY, z: nextZ }, true)
+
+    const minZ = useGameStore.getState().minZ
+    const after = body.translation()
+    if (after.z < minZ) {
+      body.setTranslation({ x: after.x, y: after.y, z: minZ }, true)
+      const lockedVel = body.linvel()
+      if (lockedVel.z < 0) body.setLinvel({ x: lockedVel.x, y: lockedVel.y, z: 0 }, true)
+    }
 
     const face = Math.atan2(ix * 0.45, 1)
     playerRuntime.yaw += (face - playerRuntime.yaw) * Math.min(1, dt * 8)

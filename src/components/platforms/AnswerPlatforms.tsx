@@ -6,8 +6,9 @@ import { useGameStore } from '../../store/gameStore'
 import { WorldLabel } from '../WorldLabel'
 
 export function AnswerPlatforms({ challenge }: { challenge: ChallengeDef }) {
+  const result = useGameStore((s) => s.answered[challenge.id] ?? 'open')
   return (
-    <group>
+    <group key={result}>
       {challenge.options.map((option) => (
         <AnswerBlock key={`${challenge.id}-${option.word}`} challenge={challenge} word={option.word} offset={option.offset} />
       ))}

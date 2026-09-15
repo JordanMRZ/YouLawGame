@@ -17,12 +17,15 @@ export class TrackBuilder {
   private x: number
   private y: number
   private z: number
+  private lastPadWidth = 14
+  private lastPadLength = 12
   private n = 0
+
   readonly platforms: PlatformDef[] = []
   readonly challenges: ChallengeDef[] = []
   readonly obstacles: ObstacleDef[] = []
   readonly coins: CoinDef[] = []
-  readonly checkpoints: { id: string; position: Vec3 }[] = []
+  readonly checkpoints: { id: string; position: Vec3; width?: number }[] = []
   readonly zones: { id: string; label: string; position: Vec3 }[] = []
   goal: { position: Vec3; size?: Vec3 } = { position: [0, 1, 20] }
 
@@ -53,6 +56,8 @@ export class TrackBuilder {
       rotationSpeed: extras.rotationSpeed,
     })
     this.z += length
+    this.lastPadWidth = width
+    this.lastPadLength = length
     return this
   }
 
@@ -91,9 +96,11 @@ export class TrackBuilder {
   }
 
   checkpoint() {
+    const inset = Math.min(6, Math.max(3.8, this.lastPadLength * 0.42))
     this.checkpoints.push({
       id: this.id('cp'),
-      position: [this.x, this.y + 1.15, this.z - 0.6],
+      position: [this.x, this.y + 1.15, this.z - inset],
+      width: this.lastPadWidth,
     })
     return this
   }
@@ -125,12 +132,13 @@ export class TrackBuilder {
     return this
   }
 
-  barrier(width = 2.2, height = 1.05) {
+  barrier(height = 1.22) {
+    const width = this.lastPadWidth
     this.obstacles.push({
       id: this.id('ob'),
       kind: 'barrier',
-      position: [this.x, this.y + height / 2 + 0.36, this.z + 1],
-      size: [width, height, 0.7],
+      position: [this.x, this.y + height / 2 + 0.36, this.z - 3.2],
+      size: [Math.max(4, width * 0.98), height, 0.85],
     })
     return this
   }

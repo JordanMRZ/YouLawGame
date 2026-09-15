@@ -74,6 +74,7 @@ export interface ChallengeDef {
 export interface CheckpointDef {
   id: string
   position: Vec3
+  width?: number
 }
 
 export interface ObstacleDef {

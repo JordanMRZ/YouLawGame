@@ -6,8 +6,8 @@ export function createLevel01(): LevelDef {
   const b = new TrackBuilder()
   b.pad(22, 26, { color: '#46d07f' })
     .coinRow(4, 2.4)
-    .barrier(2.6, 0.95)
-    .pad(20, 12, { color: '#52d68a' })
+    .barrier()
+    .pad(20, 14, { color: '#52d68a' })
     .gap(3.1)
     .pad(12, 10, { color: '#63dc96' })
     .challenge({
@@ -17,7 +17,7 @@ export function createLevel01(): LevelDef {
       correctAnswer: 'IS',
       lanes: [-6.2, 0, 6.2],
     })
-    .pad(14, 12, { color: '#46d07f' })
+    .pad(14, 16, { color: '#46d07f' })
     .checkpoint()
     .coinRow(3)
     .gap(2.8)
@@ -29,10 +29,10 @@ export function createLevel01(): LevelDef {
       correctAnswer: 'ARE',
       lanes: [6.2, -6.2, 0],
     })
-    .pad(13, 11, { color: '#46d07f' })
+    .pad(14, 16, { color: '#46d07f' })
     .checkpoint()
-    .barrier(2.2, 1.05)
-    .pad(12, 10, { color: '#5ad48e' })
+    .barrier()
+    .pad(12, 12, { color: '#5ad48e' })
     .gap(3.4)
     .pad(10, 8, { color: '#3cbc7a' })
     .challenge({

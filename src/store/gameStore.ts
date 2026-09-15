@@ -21,6 +21,7 @@ interface GameState {
   toast: string | null
   xpPopup: string | null
   lastCheckpoint: Vec3
+  minZ: number
   answered: Record<string, 'correct' | 'wrong'>
   results: RunResults | null
   save: SaveData
@@ -38,6 +39,8 @@ interface GameState {
   answer: (challengeId: string, word: string, correct: boolean) => 'correct' | 'wrong' | 'ignored'
   loseLife: (reason: 'fall' | 'wrong') => boolean
   setCheckpoint: (position: Vec3) => void
+  setMinZ: (z: number) => void
+  uncomplete: (challengeId: string) => void
   finishLevel: () => void
   failLevel: () => void
   updateSettings: (patch: Partial<SaveData['settings']>) => void
@@ -74,6 +77,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   toast: null,
   xpPopup: null,
   lastCheckpoint: [0, 2.2, 2],
+  minZ: -20,
   answered: {},
   results: null,
   save: initialSave,
@@ -101,6 +105,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       toast: null,
       xpPopup: null,
       lastCheckpoint: level.start,
+      minZ: level.start[2] - 4,
       answered: {},
       results: null,
       burst: null,
@@ -188,9 +193,29 @@ export const useGameStore = create<GameState>((set, get) => ({
   },
 
   setCheckpoint: (position) => {
-    set({ lastCheckpoint: position })
+    set({
+      lastCheckpoint: position,
+      minZ: Math.max(get().minZ, position[2] - 0.35),
+    })
     audio.play('checkpoint')
     get().showToast('CHECKPOINT!')
+  },
+
+  setMinZ: (z) => {
+    if (z <= get().minZ) return
+    set({ minZ: z })
+  },
+
+  uncomplete: (challengeId) => {
+    const current = get().answered[challengeId]
+    if (current !== 'correct') return
+    const next = { ...get().answered }
+    delete next[challengeId]
+    set({
+      answered: next,
+      correct: Math.max(0, get().correct - 1),
+      streak: 0,
+    })
   },
 
   finishLevel: () => {

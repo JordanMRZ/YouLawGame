@@ -20,10 +20,14 @@ export function Obstacle({ def }: { def: ObstacleDef }) {
 function Barrier({ def }: { def: ObstacleDef }) {
   const size = def.size ?? [2.2, 1, 0.7]
   return (
-    <RigidBody type="fixed" position={def.position} colliders="cuboid" friction={0.4}>
+    <RigidBody type="fixed" position={def.position} colliders="cuboid" friction={0.35}>
       <mesh castShadow>
         <boxGeometry args={size} />
         <meshLambertMaterial color={def.color ?? '#d64545'} />
+      </mesh>
+      <mesh position={[0, size[1] * 0.52, 0]}>
+        <boxGeometry args={[size[0], 0.08, size[2] + 0.08]} />
+        <meshLambertMaterial color="#ffd166" />
       </mesh>
     </RigidBody>
   )

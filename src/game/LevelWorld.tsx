@@ -38,6 +38,7 @@ export function LevelWorld({ level }: { level: LevelDef }) {
       ))}
       <GoalArch position={level.goal.position} />
       <ChallengeDirector challenges={level.challenges} />
+      <ProgressLock challenges={level.challenges} />
       <TimerSync />
       <KillPlane />
       <BurstFX />
@@ -65,6 +66,26 @@ function ChallengeDirector({ challenges }: { challenges: ChallengeDef[] }) {
     useGameStore.getState().setPrompt(hide ? 'Listen...' : (current.sentence ?? 'Choose a path'))
     if (current.type === 'listening' && current.audioText) {
       audio.playListening(current.audioKey, current.audioText)
+    }
+  })
+  return null
+}
+
+function ProgressLock({ challenges }: { challenges: ChallengeDef[] }) {
+  useFrame(() => {
+    if (useGameStore.getState().phase !== 'play') return
+    const z = playerRuntime.position.z
+    const state = useGameStore.getState()
+    for (const challenge of challenges) {
+      if (state.answered[challenge.id] !== 'correct') continue
+      const half = (challenge.platformSize?.[2] ?? 10) / 2
+      const back = challenge.origin[2] - half - 1.2
+      const front = challenge.origin[2] + half + 1.6
+      if (z < back) {
+        state.uncomplete(challenge.id)
+      } else if (z > front) {
+        state.setMinZ(front - 0.4)
+      }
     }
   })
   return null
