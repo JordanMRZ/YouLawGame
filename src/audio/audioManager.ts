@@ -1,6 +1,6 @@
 import { getListeningUrl } from './listening'
 import { sfx, startMusic, stopMusic, unlockAudio } from './sfx'
-import { speakEnglish, stopSpeech } from './speech'
+import { speakEnglish, speakGuide, stopSpeech } from './speech'
 
 export type SfxName = keyof typeof sfx
 
@@ -29,6 +29,14 @@ export const audio = {
   },
   stopMusic,
   stopSpeech,
+  speakGuide(text: string) {
+    if (muted) return
+    speakGuide(text)
+  },
+  speakEnglish(text: string) {
+    if (muted) return
+    speakEnglish(text)
+  },
   playListening(key: string | undefined, fallbackText: string) {
     if (muted) {
       speakEnglish(fallbackText)

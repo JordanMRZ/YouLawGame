@@ -60,7 +60,9 @@ canvas {
 .prompt,
 .toast,
 .xp-pop,
-.countdown {
+.countdown,
+.shop-panel,
+.coach {
   pointer-events: auto;
 }
 
@@ -265,12 +267,100 @@ button:disabled {
   font-size: 13px;
 }
 
-.swatch {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  padding: 0;
-  border: 2px solid transparent;
+.shop-panel {
+  position: absolute;
+  top: 78px;
+  right: 18px;
+  bottom: 18px;
+  width: min(440px, calc(100% - 36px));
+  padding: 18px;
+  border-radius: 22px;
+  background: var(--glass);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(14px);
+  overflow: auto;
+  text-align: left;
+}
+
+.shop-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.shop-hint {
+  margin: 8px 0 12px;
+}
+
+.shop-cats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.shop-cats button {
+  padding: 6px 10px;
+  font-size: 13px;
+}
+
+.shop-cats button.primary {
+  margin-top: 0;
+}
+
+.shop-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.shop-item {
+  display: grid;
+  gap: 4px;
+  text-align: left;
+  border-radius: 14px;
+  padding: 10px 12px;
+}
+
+.shop-item span {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.shop-item.on {
+  outline: 2px solid var(--mint);
+}
+
+.shop-item.preview {
+  outline: 2px dashed var(--gold);
+}
+
+.shop-confirm {
+  position: absolute;
+  inset: 18px;
+  display: grid;
+  place-content: center;
+  gap: 8px;
+  padding: 22px;
+  border-radius: 18px;
+  background: rgba(12, 22, 34, 0.92);
+  text-align: center;
+  z-index: 2;
+}
+
+.coach {
+  position: absolute;
+  bottom: 22px;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: min(720px, calc(100% - 32px));
+  padding: 10px 16px;
+  border-radius: 14px;
+  background: rgba(16, 32, 48, 0.7);
+  text-align: center;
+  font-weight: 650;
 }
 
 .swatch.on {

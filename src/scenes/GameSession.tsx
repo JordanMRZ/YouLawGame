@@ -10,7 +10,12 @@ export function GameSession() {
   const levelId = useGameStore((s) => s.levelId)
   const sessionId = useGameStore((s) => s.sessionId)
   const paused = useGameStore(
-    (s) => s.phase === 'paused' || s.phase === 'intro' || s.phase === 'countdown' || Boolean(s.mistake),
+    (s) =>
+      s.phase === 'paused' ||
+      s.phase === 'intro' ||
+      s.phase === 'tutorial' ||
+      s.phase === 'countdown' ||
+      Boolean(s.mistake),
   )
   const level = useMemo(() => getLevel(levelId), [levelId])
 

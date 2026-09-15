@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { audio } from '../audio/audioManager'
 import { getLevel, unloadLevel } from '../data/levels'
+import { itemById } from '../data/shop'
 import { loadSave, persistSave } from '../data/storage'
 import type { Cosmetics, GamePhase, RunResults, SaveData, Vec3 } from '../data/types'
 import { explainMistake, type MissReason } from '../game/explain'
@@ -38,8 +39,11 @@ interface GameState {
   lastExplanation: string | null
   results: RunResults | null
   save: SaveData
-  customizeOpen: boolean
+  shopOpen: boolean
+  shopPreview: Cosmetics | null
   settingsOpen: boolean
+  tutorialStep: number
+  coachLine: string | null
   burst: { at: Vec3; kind: 'correct' | 'wrong' | 'checkpoint' | 'goal' | 'coin' } | null
   startLevel: (id: number) => void
   backToHub: () => void
@@ -62,8 +66,12 @@ interface GameState {
   failLevel: () => void
   updateSettings: (patch: Partial<SaveData['settings']>) => void
   updateCosmetics: (patch: Partial<Cosmetics>) => void
-  setCustomizeOpen: (open: boolean) => void
+  buyItem: (id: string) => boolean
+  setShopOpen: (open: boolean) => void
+  setShopPreview: (cosmetics: Cosmetics | null) => void
   setSettingsOpen: (open: boolean) => void
+  setTutorialStep: (step: number) => void
+  setCoachLine: (text: string | null) => void
   spawnBurst: (kind: 'correct' | 'wrong' | 'checkpoint' | 'goal' | 'coin', at: Vec3) => void
   clearBurst: () => void
 }
@@ -103,8 +111,11 @@ export const useGameStore = create<GameState>((set, get) => ({
   lastExplanation: null,
   results: null,
   save: initialSave,
-  customizeOpen: false,
+  shopOpen: false,
+  shopPreview: null,
   settingsOpen: false,
+  tutorialStep: 0,
+  coachLine: null,
   burst: null,
 
   startLevel: (id) => {
@@ -114,7 +125,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     audio.stopSpeech()
     set({
       sessionId: get().sessionId + 1,
-      phase: 'intro',
+      phase: id === 1 ? 'tutorial' : 'intro',
       levelId: id,
       lives: 3,
       streak: 0,
@@ -136,8 +147,10 @@ export const useGameStore = create<GameState>((set, get) => ({
       lastExplanation: null,
       results: null,
       burst: null,
-      customizeOpen: false,
+      shopOpen: false,
       settingsOpen: false,
+      tutorialStep: 0,
+      coachLine: null,
     })
   },
 
@@ -150,6 +163,8 @@ export const useGameStore = create<GameState>((set, get) => ({
       results: null,
       mistake: null,
       burst: null,
+      coachLine: null,
+      shopOpen: false,
     })
   },
 
@@ -173,10 +188,16 @@ export const useGameStore = create<GameState>((set, get) => ({
     const key = `coin-${id}`
     if (get().answered[key]) return
     audio.play('coin')
+    const save = {
+      ...get().save,
+      wallet: get().save.wallet + 1,
+    }
+    persist(save)
     set({
       coins: get().coins + 1,
+      save,
       answered: { ...get().answered, [key]: 'correct' },
-      xpPopup: '+25 XP',
+      xpPopup: '+1 moneda',
     })
     if (popupTimer) window.clearTimeout(popupTimer)
     popupTimer = window.setTimeout(() => set({ xpPopup: null }), 700)
@@ -391,8 +412,38 @@ export const useGameStore = create<GameState>((set, get) => ({
     set({ save })
   },
 
-  setCustomizeOpen: (open) => set({ customizeOpen: open }),
-  setSettingsOpen: (open) => set({ settingsOpen: open }),
+  buyItem: (id) => {
+    const item = itemById(id)
+    if (!item) return false
+    const state = get()
+    const owned = state.save.owned.includes(id)
+    if (owned) {
+      get().updateCosmetics(item.patch)
+      return true
+    }
+    if (state.save.wallet < item.price) {
+      get().showToast('No te alcanza')
+      return false
+    }
+    const save = {
+      ...state.save,
+      wallet: state.save.wallet - item.price,
+      owned: [...state.save.owned, id],
+      cosmetics: { ...state.save.cosmetics, ...item.patch },
+    }
+    persist(save)
+    audio.play('coin')
+    set({ save, shopPreview: null })
+    get().showToast('Comprado')
+    return true
+  },
+
+  setShopOpen: (open) =>
+    set({ shopOpen: open, shopPreview: null, settingsOpen: open ? false : get().settingsOpen }),
+  setShopPreview: (cosmetics) => set({ shopPreview: cosmetics }),
+  setSettingsOpen: (open) => set({ settingsOpen: open, shopOpen: open ? false : get().shopOpen, shopPreview: open ? get().shopPreview : null }),
+  setTutorialStep: (step) => set({ tutorialStep: step }),
+  setCoachLine: (text) => set({ coachLine: text }),
 
   spawnBurst: (kind, at) => set({ burst: { kind, at } }),
   clearBurst: () => set({ burst: null }),

@@ -29,6 +29,7 @@ export type AnimState = 'idle' | 'run' | 'jump' | 'fall' | 'land' | 'victory'
 export type GamePhase =
   | 'hub'
   | 'intro'
+  | 'tutorial'
   | 'countdown'
   | 'play'
   | 'paused'
@@ -130,10 +131,34 @@ export interface LevelDef {
   palette: LevelPalette
 }
 
+export type HairStyle = 'short' | 'spike' | 'bun' | 'long'
+export type ShirtStyle = 'tee' | 'hoodie' | 'blazer'
+export type GlassesStyle = 'none' | 'round' | 'square' | 'sun'
+export type HatStyle = 'none' | 'cap' | 'beanie' | 'bow'
+export type PackStyle = 'none' | 'pack' | 'satchel'
+export type ShopCategory = 'skin' | 'hair' | 'shirt' | 'pants' | 'shoes' | 'glasses' | 'hat' | 'pack' | 'extra'
+
 export interface Cosmetics {
+  skin: string
+  hair: string
+  hairStyle: HairStyle
   shirt: string
-  glasses: boolean
-  backpack: boolean
+  shirtStyle: ShirtStyle
+  pants: string
+  shoes: string
+  glasses: GlassesStyle
+  hat: HatStyle
+  backpack: PackStyle
+  scarf: boolean
+  watch: boolean
+}
+
+export interface ShopItem {
+  id: string
+  name: string
+  category: ShopCategory
+  price: number
+  patch: Partial<Cosmetics>
 }
 
 export interface LevelRecord {
@@ -152,6 +177,8 @@ export interface Settings {
 export interface SaveData {
   unlockedLevel: number
   xp: number
+  wallet: number
+  owned: string[]
   levels: Record<string, LevelRecord>
   settings: Settings
   cosmetics: Cosmetics

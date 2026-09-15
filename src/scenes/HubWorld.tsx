@@ -1,5 +1,5 @@
 import { useFrame } from '@react-three/fiber'
-import { useMemo, useRef } from 'react'
+import { useMemo, useRef, type ReactNode } from 'react'
 import { Group } from 'three'
 import { WorldLabel } from '../components/WorldLabel'
 import { levelCatalog } from '../data/levels'
@@ -11,7 +11,10 @@ import { HubCamera } from './HubCamera'
 export function HubWorld() {
   const selected = useGameStore((s) => s.selectedLevel)
   const unlocked = useGameStore((s) => s.save.unlockedLevel)
-  const cosmetics = useGameStore((s) => s.save.cosmetics)
+  const equipped = useGameStore((s) => s.save.cosmetics)
+  const preview = useGameStore((s) => s.shopPreview)
+  const cosmetics = preview ?? equipped
+  const shopOpen = useGameStore((s) => s.shopOpen)
   const stars = useGameStore((s) => s.save.levels)
   const group = useRef<Group>(null)
 
@@ -38,8 +41,8 @@ export function HubWorld() {
       <color attach="background" args={['#bfe8f5']} />
       <fog attach="fog" args={['#bfe8f5', 18, 70]} />
       <hemisphereLight args={['#dff6ff', '#3cbf7a', 0.9]} />
-      <ambientLight intensity={0.5} />
-      <directionalLight position={[10, 18, 8]} intensity={1.3} castShadow />
+      <ambientLight intensity={0.55} />
+      <directionalLight position={[10, 18, 8]} intensity={1.35} castShadow />
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.4, -6]}>
         <circleGeometry args={[28, 32]} />
         <meshBasicMaterial color="#3cbf7a" />
@@ -48,16 +51,58 @@ export function HubWorld() {
         <circleGeometry args={[7.5, 32]} />
         <meshBasicMaterial color="#d9c2a0" />
       </mesh>
-      <group position={[0, 0, -1.5]}>
-        <PlayerVisual cosmetics={cosmetics} />
-      </group>
-      <group ref={group}>
-        {nodes.map((node) => (
-          <HubNode key={node.id} node={node} selected={selected === node.id} />
-        ))}
-      </group>
-      <WorldLabel text="WORD BRIDGE 3D" position={[0, 4.4, -8]} width={12} />
+      <Turntable shopOpen={shopOpen}>
+        <PlayerVisual cosmetics={cosmetics} pose={shopOpen ? 'turntable' : 'idle'} />
+      </Turntable>
+      {!shopOpen && (
+        <group ref={group}>
+          {nodes.map((node) => (
+            <HubNode key={node.id} node={node} selected={selected === node.id} />
+          ))}
+        </group>
+      )}
+      {!shopOpen && <WorldLabel text="WORD BRIDGE 3D" position={[0, 4.4, -8]} width={12} />}
     </>
+  )
+}
+
+function Turntable({ children, shopOpen }: { children: ReactNode; shopOpen: boolean }) {
+  const ref = useRef<Group>(null)
+  const drag = useRef({ on: false, last: 0, yaw: Math.PI })
+
+  useFrame((_, dt) => {
+    if (!ref.current) return
+    if (shopOpen && !drag.current.on) drag.current.yaw += dt * 0.35
+    ref.current.rotation.y = drag.current.yaw
+  })
+
+  return (
+    <group
+      ref={ref}
+      position={[0, 0, -1.5]}
+      onPointerDown={(event) => {
+        event.stopPropagation()
+        drag.current.on = true
+        drag.current.last = event.clientX
+      }}
+      onPointerUp={() => {
+        drag.current.on = false
+      }}
+      onPointerLeave={() => {
+        drag.current.on = false
+      }}
+      onPointerMove={(event) => {
+        if (!drag.current.on) return
+        drag.current.yaw += (event.clientX - drag.current.last) * 0.012
+        drag.current.last = event.clientX
+      }}
+    >
+      {children}
+      <mesh position={[0, 0.85, 0]} visible={false}>
+        <cylinderGeometry args={[0.95, 0.95, 1.9, 12]} />
+        <meshBasicMaterial />
+      </mesh>
+    </group>
   )
 }
 

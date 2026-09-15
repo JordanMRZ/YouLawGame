@@ -61,13 +61,24 @@ function ChallengeDirector({ challenges }: { challenges: ChallengeDef[] }) {
     if (!current) {
       useGameStore.getState().setPrompt(null)
       useGameStore.getState().setActiveChallenge(null)
+      useGameStore.getState().setCoachLine(null)
       return
     }
     const hide = Boolean(current.hideSentence || current.type === 'listening')
     useGameStore.getState().setPrompt(hide ? 'Listen...' : (current.sentence ?? 'Choose a path'))
     useGameStore.getState().setActiveChallenge(current.id)
+    const coach = hide
+      ? 'Escucha con atención y pisa la plataforma correcta.'
+      : `Pisa la plataforma correcta. ${current.sentence ?? ''}`
+    useGameStore.getState().setCoachLine(coach)
     if (current.type === 'listening' && current.audioText) {
-      audio.playListening(current.audioKey, current.audioText)
+      audio.speakGuide(coach)
+      window.setTimeout(() => audio.playListening(current.audioKey, current.audioText ?? ''), 1800)
+    } else {
+      audio.speakGuide(coach)
+      if (current.sentence) {
+        window.setTimeout(() => audio.speakEnglish(current.sentence ?? ''), 1700)
+      }
     }
   })
   return null
