@@ -32,7 +32,7 @@ export function createLevel03(): LevelDef {
     })
     .pad(11, 8, { color: '#5a4fcf' })
     .checkpoint()
-    .setY(3.6)
+    .setY(3.2)
     .gap(3)
     .pad(7.5, 6.5, { color: '#9b8cff' })
     .pad(7, 6, { kind: 'vanishing', color: '#ffc6ff' })
