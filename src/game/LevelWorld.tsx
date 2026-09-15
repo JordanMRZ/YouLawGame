@@ -60,10 +60,12 @@ function ChallengeDirector({ challenges }: { challenges: ChallengeDef[] }) {
     last.current = id
     if (!current) {
       useGameStore.getState().setPrompt(null)
+      useGameStore.getState().setActiveChallenge(null)
       return
     }
     const hide = Boolean(current.hideSentence || current.type === 'listening')
     useGameStore.getState().setPrompt(hide ? 'Listen...' : (current.sentence ?? 'Choose a path'))
+    useGameStore.getState().setActiveChallenge(current.id)
     if (current.type === 'listening' && current.audioText) {
       audio.playListening(current.audioKey, current.audioText)
     }
@@ -93,12 +95,18 @@ function ProgressLock({ challenges }: { challenges: ChallengeDef[] }) {
 
 function TimerSync() {
   const acc = useRef(0)
+  const qAcc = useRef(0)
   useFrame((_, dt) => {
     if (useGameStore.getState().phase !== 'play') return
     acc.current += dt
     if (acc.current >= 0.2) {
       useGameStore.getState().tick(acc.current)
       acc.current = 0
+    }
+    qAcc.current += dt
+    if (qAcc.current >= 0.08) {
+      useGameStore.getState().tickChallenge(qAcc.current)
+      qAcc.current = 0
     }
   })
   return null

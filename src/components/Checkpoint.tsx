@@ -42,7 +42,7 @@ export function CheckpointGate({ def }: { def: CheckpointDef }) {
         <RigidBody type="fixed" position={[0, 1.1, -0.85]} colliders="cuboid">
           <mesh>
             <boxGeometry args={[width * 0.96, 2.6, 0.45]} />
-            <meshLambertMaterial color="#1f6f8b" />
+            <meshLambertMaterial color="#9fd9f0" transparent opacity={0.06} depthWrite={false} />
           </mesh>
         </RigidBody>
       )}

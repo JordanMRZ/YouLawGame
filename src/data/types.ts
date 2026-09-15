@@ -69,6 +69,9 @@ export interface ChallengeDef {
   correctAnswer: string
   platformSize?: Vec3
   hideSentence?: boolean
+  explanation?: string
+  wrongWhy?: Record<string, string>
+  timeLimit?: number
 }
 
 export interface CheckpointDef {
@@ -187,4 +190,7 @@ export interface ChallengeDraft {
   length?: number
   spread?: number
   lanes?: [number, number, number]
+  explanation?: string
+  wrongWhy?: Record<string, string>
+  timeLimit?: number
 }

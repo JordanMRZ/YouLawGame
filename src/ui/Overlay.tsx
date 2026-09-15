@@ -11,8 +11,14 @@ export function Overlay() {
     const onKey = (event: KeyboardEvent) => {
       const state = useGameStore.getState()
       if (event.code === 'Escape') {
+        if (state.mistake) return
         if (state.phase === 'play') state.setPhase('paused')
         else if (state.phase === 'paused') state.setPhase('play')
+      }
+      if (state.mistake && event.code === 'Enter') {
+        event.preventDefault()
+        state.dismissMistake()
+        return
       }
       if (state.phase === 'hub') {
         if (event.code === 'ArrowRight' || event.code === 'KeyD') {
@@ -108,6 +114,8 @@ function HUD() {
   const toast = useGameStore((s) => s.toast)
   const xpPopup = useGameStore((s) => s.xpPopup)
   const phase = useGameStore((s) => s.phase)
+  const challengeTimeLeft = useGameStore((s) => s.challengeTimeLeft)
+  const mistake = useGameStore((s) => s.mistake)
   if (phase === 'results' || phase === 'failed' || phase === 'credits') return null
 
   return (
@@ -118,8 +126,12 @@ function HUD() {
         <div className="time">{formatTime(elapsed)}</div>
       </div>
       {prompt && <div className="prompt">{prompt}</div>}
+      {prompt && challengeTimeLeft > 0 && !mistake && (
+        <div className={`q-timer ${challengeTimeLeft <= 5 ? 'urgent' : ''}`}>{Math.ceil(challengeTimeLeft)}</div>
+      )}
       {toast && <div className="toast">{toast}</div>}
       {xpPopup && <div className="xp-pop">{xpPopup}</div>}
+      {mistake && <ExplainCard />}
     </>
   )
 }
@@ -219,12 +231,29 @@ function ResultsCard() {
   )
 }
 
+function ExplainCard() {
+  const mistake = useGameStore((s) => s.mistake)
+  if (!mistake) return null
+  return (
+    <div className="modal explain">
+      <p className="kicker">{mistake.lastLife ? 'SE ACABARON LAS 3 VIDAS' : 'RESPUESTA INCORRECTA'}</p>
+      <h2>{mistake.lastLife ? 'Por eso fallaste' : '¿Por qué está mal?'}</h2>
+      <p className="explain-text">{mistake.text}</p>
+      <button type="button" className="primary" onClick={() => useGameStore.getState().dismissMistake()}>
+        {mistake.lastLife ? 'Ver resultado' : 'Continuar'}
+      </button>
+    </div>
+  )
+}
+
 function FailCard() {
   const levelId = useGameStore((s) => s.levelId)
+  const lastExplanation = useGameStore((s) => s.lastExplanation)
   return (
     <div className="modal">
       <h2>LEVEL FAILED</h2>
-      <p>Three lives gone. Jump back in.</p>
+      <p>Se agotaron las 3 vidas.</p>
+      {lastExplanation && <p className="explain-text">{lastExplanation}</p>}
       <div className="row">
         <button type="button" className="primary" onClick={() => useGameStore.getState().startLevel(levelId)}>
           Restart

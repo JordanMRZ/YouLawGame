@@ -11,6 +11,8 @@ La pista avanza en **+Z**. Izquierda/derecha es **X**. Altura es **Y**.
 | Qué | Archivo |
 | --- | --- |
 | Preguntas, frases, respuestas, layout del nivel | `src/data/levels/level01.ts` … `level10.ts` |
+| Explicación al fallar | `src/data/explanations.ts` |
+| Segundos del cronómetro | `timeLimit` en el `challenge()` o default 15 en `src/data/trackBuilder.ts` |
 | Nombre, subtítulo y tema que se ven en el hub | `src/data/levels.ts` **y** el `b.build({...})` de ese nivel |
 | Colores del cielo, niebla, agua y suelo | `src/data/worlds.ts` |
 | Cómo se construye la pista (`pad`, `barrier`, `challenge`…) | `src/data/trackBuilder.ts` |

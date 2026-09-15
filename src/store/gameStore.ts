@@ -3,6 +3,8 @@ import { audio } from '../audio/audioManager'
 import { getLevel, unloadLevel } from '../data/levels'
 import { loadSave, persistSave } from '../data/storage'
 import type { Cosmetics, GamePhase, RunResults, SaveData, Vec3 } from '../data/types'
+import { explainMistake, type MissReason } from '../game/explain'
+import { playerRuntime } from '../game/runtime'
 import { computeResults } from '../game/scoring'
 
 interface GameState {
@@ -23,6 +25,17 @@ interface GameState {
   lastCheckpoint: Vec3
   minZ: number
   answered: Record<string, 'correct' | 'wrong'>
+  tried: Record<string, string[]>
+  activeChallengeId: string | null
+  challengeTimeLeft: number
+  mistake: {
+    challengeId: string
+    chosen: string
+    reason: MissReason
+    text: string
+    lastLife: boolean
+  } | null
+  lastExplanation: string | null
   results: RunResults | null
   save: SaveData
   customizeOpen: boolean
@@ -37,6 +50,10 @@ interface GameState {
   showToast: (text: string) => void
   collectCoin: (id: string) => void
   answer: (challengeId: string, word: string, correct: boolean) => 'correct' | 'wrong' | 'ignored'
+  missChallenge: (challengeId: string, reason: Exclude<MissReason, 'wrong'>) => void
+  dismissMistake: () => void
+  setActiveChallenge: (id: string | null) => void
+  tickChallenge: (dt: number) => void
   loseLife: (reason: 'fall' | 'wrong') => boolean
   setCheckpoint: (position: Vec3) => void
   setMinZ: (z: number) => void
@@ -79,6 +96,11 @@ export const useGameStore = create<GameState>((set, get) => ({
   lastCheckpoint: [0, 2.2, 2],
   minZ: -20,
   answered: {},
+  tried: {},
+  activeChallengeId: null,
+  challengeTimeLeft: 0,
+  mistake: null,
+  lastExplanation: null,
   results: null,
   save: initialSave,
   customizeOpen: false,
@@ -107,6 +129,11 @@ export const useGameStore = create<GameState>((set, get) => ({
       lastCheckpoint: level.start,
       minZ: level.start[2] - 4,
       answered: {},
+      tried: {},
+      activeChallengeId: null,
+      challengeTimeLeft: 0,
+      mistake: null,
+      lastExplanation: null,
       results: null,
       burst: null,
       customizeOpen: false,
@@ -121,6 +148,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       prompt: null,
       toast: null,
       results: null,
+      mistake: null,
       burst: null,
     })
   },
@@ -129,7 +157,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   setSelectedLevel: (id) => set({ selectedLevel: id }),
 
   tick: (dt) => {
-    if (get().phase !== 'play') return
+    if (get().phase !== 'play' || get().mistake) return
     set({ elapsed: get().elapsed + dt })
   },
 
@@ -154,30 +182,110 @@ export const useGameStore = create<GameState>((set, get) => ({
     popupTimer = window.setTimeout(() => set({ xpPopup: null }), 700)
   },
 
-  answer: (challengeId, _word, correct) => {
-    if (get().answered[challengeId] || get().phase !== 'play') return 'ignored'
+  answer: (challengeId, word, correct) => {
+    const state = get()
+    if (state.phase !== 'play' || state.mistake) return 'ignored'
+    if (state.answered[challengeId] === 'correct') return 'ignored'
+    if ((state.tried[challengeId] ?? []).includes(word)) return 'ignored'
+    const level = getLevel(state.levelId)
+    const challenge = level.challenges.find((item) => item.id === challengeId)
+    if (!challenge) return 'ignored'
+
     if (correct) {
-      const streak = get().streak + 1
+      const streak = state.streak + 1
       audio.play('correct')
       set({
-        answered: { ...get().answered, [challengeId]: 'correct' },
-        correct: get().correct + 1,
+        answered: { ...state.answered, [challengeId]: 'correct' },
+        correct: state.correct + 1,
         streak,
-        bestStreak: Math.max(get().bestStreak, streak),
+        bestStreak: Math.max(state.bestStreak, streak),
         xpPopup: streak >= 2 ? `STREAK x${streak}` : '+80 XP',
+        challengeTimeLeft: 0,
       })
       if (popupTimer) window.clearTimeout(popupTimer)
       popupTimer = window.setTimeout(() => set({ xpPopup: null }), 900)
       return 'correct'
     }
+
+    const tried = { ...state.tried, [challengeId]: [...(state.tried[challengeId] ?? []), word] }
     audio.play('wrong')
+    const lives = state.lives - 1
+    const text = explainMistake(challenge, word, 'wrong')
     set({
-      answered: { ...get().answered, [challengeId]: 'wrong' },
-      mistakes: get().mistakes + 1,
+      tried,
+      mistakes: state.mistakes + 1,
       streak: 0,
+      lives,
+      mistake: { challengeId, chosen: word, reason: 'wrong', text, lastLife: lives <= 0 },
+      lastExplanation: text,
+      challengeTimeLeft: 0,
     })
-    const stillAlive = get().loseLife('wrong')
-    return stillAlive ? 'wrong' : 'wrong'
+    return 'wrong'
+  },
+
+  missChallenge: (challengeId, reason) => {
+    const state = get()
+    if (state.phase !== 'play' || state.mistake) return
+    if (state.answered[challengeId] === 'correct') return
+    const level = getLevel(state.levelId)
+    const challenge = level.challenges.find((item) => item.id === challengeId)
+    if (!challenge) return
+    audio.play('wrong')
+    const lives = state.lives - 1
+    const text = explainMistake(challenge, challenge.correctAnswer, reason)
+    set({
+      mistakes: state.mistakes + 1,
+      streak: 0,
+      lives,
+      mistake: { challengeId, chosen: reason === 'timeout' ? 'TIME' : 'PASSED', reason, text, lastLife: lives <= 0 },
+      lastExplanation: text,
+      challengeTimeLeft: 0,
+    })
+  },
+
+  dismissMistake: () => {
+    const state = get()
+    if (!state.mistake) return
+    if (state.lives <= 0) {
+      get().failLevel()
+      return
+    }
+    const level = getLevel(state.levelId)
+    const challenge = level.challenges.find((item) => item.id === state.activeChallengeId)
+    set({
+      mistake: null,
+      challengeTimeLeft: challenge?.timeLimit ?? 15,
+    })
+    playerRuntime.respawn()
+  },
+
+  setActiveChallenge: (id) => {
+    if (id === get().activeChallengeId) return
+    if (!id) {
+      set({ activeChallengeId: null, challengeTimeLeft: 0 })
+      return
+    }
+    const level = getLevel(get().levelId)
+    const challenge = level.challenges.find((item) => item.id === id)
+    const already = get().answered[id] === 'correct'
+    set({
+      activeChallengeId: id,
+      challengeTimeLeft: already ? 0 : (challenge?.timeLimit ?? 15),
+    })
+  },
+
+  tickChallenge: (dt) => {
+    const state = get()
+    if (state.phase !== 'play' || state.mistake) return
+    if (!state.activeChallengeId || state.challengeTimeLeft <= 0) return
+    if (state.answered[state.activeChallengeId] === 'correct') return
+    const left = state.challengeTimeLeft - dt
+    if (left <= 0) {
+      set({ challengeTimeLeft: 0 })
+      get().missChallenge(state.activeChallengeId, 'timeout')
+      return
+    }
+    set({ challengeTimeLeft: left })
   },
 
   loseLife: (reason) => {
@@ -261,7 +369,7 @@ export const useGameStore = create<GameState>((set, get) => ({
 
   failLevel: () => {
     audio.play('fail')
-    set({ phase: 'failed', prompt: null })
+    set({ phase: 'failed', prompt: null, mistake: null, challengeTimeLeft: 0 })
   },
 
   updateSettings: (patch) => {

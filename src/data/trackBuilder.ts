@@ -1,3 +1,4 @@
+import { lessonFor } from './explanations'
 import type { ChallengeDef, ChallengeDraft, CoinDef, LevelDef, ObstacleDef, PlatformDef, Vec3 } from './types'
 
 function shuffle<T>(items: T[]): T[] {
@@ -198,6 +199,7 @@ export class TrackBuilder {
       offset: [lanes[index] ?? 0, 0, 0] as Vec3,
     }))
 
+    const lesson = lessonFor(draft.sentence)
     this.challenges.push({
       id: this.id('q'),
       type: draft.type,
@@ -209,6 +211,9 @@ export class TrackBuilder {
       correctAnswer: draft.correctAnswer,
       platformSize: size,
       hideSentence: draft.hideSentence,
+      explanation: draft.explanation ?? lesson?.why,
+      wrongWhy: draft.wrongWhy ?? lesson?.wrong,
+      timeLimit: draft.timeLimit ?? 15,
     })
 
     this.platforms.push({
