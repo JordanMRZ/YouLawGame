@@ -23,7 +23,7 @@ export function createLevel04(): LevelDef {
       color: '#e09f3e',
       motion: { axis: 'x', amplitude: 4.2, speed: 1.15 },
     })
-    .platformAt([10, 0, b.cursor()[2] + 6], [8, 0.72, 12], { color: '#283618' })
+    
     .challenge({
       type: 'grammar',
       sentence: 'They ___ the exam last week.',
@@ -48,7 +48,7 @@ export function createLevel04(): LevelDef {
     })
     .pad(13, 12, { color: '#606c38' })
     .coinRow(5)
-    .finish(15, 16)
+    .finish(15, 12)
 
   return b.build({
     id: 4,

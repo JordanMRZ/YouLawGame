@@ -44,7 +44,7 @@ export function createLevel07(): LevelDef {
     })
     .pad(13, 12, { color: '#0077b6' })
     .coinRow(5)
-    .finish(14, 16)
+    .finish(5, 29)
 
   return b.build({
     id: 7,

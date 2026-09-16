@@ -230,7 +230,7 @@ export class TrackBuilder {
 
   finish(width = 16, length = 18) {
     this.goal = {
-      position: [this.x, this.y + 1.2, this.z + 4],
+      position: [this.x, this.y + 1.2, this.z + 8],
       size: [8, 4, 2],
     }
     this.pad(width, length)
