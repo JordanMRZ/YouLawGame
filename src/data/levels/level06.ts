@@ -42,7 +42,7 @@ export function createLevel06(): LevelDef {
     .checkpoint()
     .pad(5, 6, { kind: 'vanishing', color: '#b7e4c7' })
     .gap(2)
-    .setY(7)
+    .setY(6)
     .pad(4.8, 5, { color: '#d8f3dc' })
     .challenge({
       type: 'grammar',

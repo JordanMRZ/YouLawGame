@@ -171,9 +171,10 @@ function IntroCard() {
   const level = getLevel(levelId)
   useEffect(() => {
     audio.unlock()
-    audio.speakGuide(
-      `Nivel ${level.id}. ${level.name}. ${level.subtitle}. W avanza y espacio salta.`,
-    )
+    // quite la voz -Carlos
+    //audio.speakGuide(
+    //  `Nivel ${level.id}. ${level.name}. ${level.subtitle}. W avanza y espacio salta.`,
+    //)
     return () => audio.stopSpeech()
   }, [level.id, level.name, level.subtitle])
   return (
@@ -214,7 +215,7 @@ function Countdown() {
         if (idLevel === 1) {
           const line = 'Adelante con W. Salta el muro rojo con la barra espaciadora. Recoge monedas para la tienda.'
           useGameStore.getState().setCoachLine(line)
-          audio.speakGuide(line)
+          //audio.speakGuide(line)
         }
         useGameStore.getState().setPhase('play')
         return

@@ -91,11 +91,8 @@ function ChallengeDirector({ challenges }: { challenges: ChallengeDef[] }) {
     spokenAt.current[current.id] = now
 
     if (current.type === 'listening' && current.audioText) {
-      audio.speakGuide(coach)
       window.setTimeout(() => audio.playListening(current.audioKey, current.audioText ?? ''), 1400)
-      return
     }
-    if (current.sentence) audio.speakEnglish(current.sentence)
   })
   return null
 }
