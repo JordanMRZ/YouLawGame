@@ -97,10 +97,10 @@ export class TrackBuilder {
   }
 
   checkpoint() {
-    const inset = Math.min(6, Math.max(3.8, this.lastPadLength * 0.42))
+    const inset = Math.min(6, Math.max(3.8, this.lastPadLength * 0.50))
     this.checkpoints.push({
       id: this.id('cp'),
-      position: [this.x, this.y + 1.15, this.z - inset],
+      position: [this.x, this.y + 2.5, this.z - inset],
       width: this.lastPadWidth,
     })
     return this

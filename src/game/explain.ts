@@ -10,7 +10,7 @@ export function explainMistake(challenge: ChallengeDef, chosen: string, reason: 
     return `Se acabó el tiempo. La respuesta correcta es ${challenge.correctAnswer}. ${why}`
   }
   if (reason === 'passed') {
-    return `Pasaste de largo sin pisar una plataforma. La respuesta correcta es ${challenge.correctAnswer}. ${why}`
+    return `Pasaste de largo sin pisar una plataforma... Pierdes una vida.La respuesta correcta es ${challenge.correctAnswer}. ${why}`
   }
   const specific = challenge.wrongWhy?.[chosen] ?? note?.wrong[chosen]
   if (specific) return `${chosen} no encaja. ${specific} Lo correcto es ${challenge.correctAnswer}. ${why}`
