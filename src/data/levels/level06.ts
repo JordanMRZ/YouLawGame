@@ -7,7 +7,7 @@ export function createLevel06(): LevelDef {
   b.pad(10, 14, { color: '#74c69d' })
     .coinRow(3)
     .gap(3.6)
-    .setY(10)
+    .setY(5)
     .pad(6.2, 6, { color: '#95d5b2' })
     .challenge({
       type: 'grammar',
@@ -17,11 +17,11 @@ export function createLevel06(): LevelDef {
       spread: 5.4,
       length: 8,
     })
-    .setY(8)
+    .setY(5)
     .pad(9, 8, { color: '#52b788' })
     .checkpoint()
     .gap(3.2)
-    .setY(12)
+    .setY(5)
     .pad(5.4, 5.5, {
       kind: 'moving',
       color: '#d8f3dc',
@@ -37,12 +37,12 @@ export function createLevel06(): LevelDef {
       spread: 5.2,
       length: 8,
     })
-    .setY(9)
+    .setY(5)
     .pad(8, 8, { color: '#40916c' })
     .checkpoint()
     .pad(5, 6, { kind: 'vanishing', color: '#b7e4c7' })
-    .gap(3)
-    .setY(13)
+    .gap(2)
+    .setY(7)
     .pad(4.8, 5, { color: '#d8f3dc' })
     .challenge({
       type: 'grammar',
@@ -52,7 +52,7 @@ export function createLevel06(): LevelDef {
       spread: 5,
       length: 8,
     })
-    .setY(8)
+    .setY(5)
     .pad(10, 12, { color: '#52b788' })
     .coinRow(4)
     .finish(12, 16)
