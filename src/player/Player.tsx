@@ -13,7 +13,7 @@ import { useKeyboard } from './useKeyboard'
 const MOVE_SPEED = 10.2
 const SPRINT_SPEED = 14.2
 const AIR_CONTROL = 0.72
-const JUMP_VEL = 9.4
+const JUMP_VEL = 12
 
 export function Player({ level }: { level: LevelDef }) {
   const bodyRef = useRef<RapierRigidBody>(null)

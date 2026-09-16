@@ -277,7 +277,9 @@ export const useGameStore = create<GameState>((set, get) => ({
       mistake: null,
       challengeTimeLeft: challenge?.timeLimit ?? 15,
     })
-    playerRuntime.respawn()
+    if (state.mistake.reason !== 'passed') {
+      playerRuntime.respawn()
+    }
   },
 
   setActiveChallenge: (id) => {
