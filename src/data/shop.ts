@@ -15,6 +15,7 @@ export const defaultCosmetics: Cosmetics = {
   watch: false,
   car: false,
   tank: false,
+  bugatti: false,
 }
 
 export const starterOwned = [
@@ -89,6 +90,8 @@ export const shopCatalog: ShopItem[] = [
   { id: 'car-off', name: 'Sin carro', category: 'extra', price: 0, patch: { car: false }, swatch: '#d7e8f3' },
   { id: 'tank-on', name: 'Tanque de guerra', category: 'extra', price: 110, patch: { tank: true }, swatch: '#526b3f' },
   { id: 'tank-off', name: 'Sin tanque', category: 'extra', price: 0, patch: { tank: false }, swatch: '#d7e8f3' },
+  { id: 'bugatti-on', name: 'Superdeportivo', category: 'extra', price: 150, patch: { bugatti: true }, swatch: '#123b63' },
+  { id: 'bugatti-off', name: 'Sin superdeportivo', category: 'extra', price: 0, patch: { bugatti: false } },
 ]
 
 export const shopCategories: { id: ShopItem['category']; label: string; icon: string }[] = [

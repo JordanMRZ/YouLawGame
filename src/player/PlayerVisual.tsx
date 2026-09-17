@@ -245,6 +245,7 @@ export function PlayerVisual({
       <Backpack cosmetics={cosmetics} />
       {cosmetics.car && <Car />}
       {cosmetics.tank && <Tank />}
+      {cosmetics.bugatti && <Bugatti />}
     </group>
   )
 }
@@ -317,6 +318,51 @@ function Tank() {
         <cylinderGeometry args={[0.055, 0.055, 0.72, 12]} />
         <meshStandardMaterial color="#293524" roughness={0.85} />
       </mesh>
+    </group>
+  )
+}
+
+function Bugatti() {
+  return (
+    <group position={[0, 0.2, 0.14]}>
+      <mesh position={[0, 0.08, 0]} castShadow>
+        <boxGeometry args={[1.02, 0.24, 1.2]} />
+        <meshStandardMaterial color="#123b63" roughness={0.45} metalness={0.25} />
+      </mesh>
+      <mesh position={[0, 0.25, -0.08]} castShadow>
+        <boxGeometry args={[0.58, 0.22, 0.5]} />
+        <meshStandardMaterial color="#1b5687" roughness={0.35} metalness={0.2} />
+      </mesh>
+      <mesh position={[0, 0.27, 0.2]}>
+        <boxGeometry args={[0.46, 0.12, 0.012]} />
+        <meshStandardMaterial color="#9ed8ed" transparent opacity={0.82} roughness={0.12} metalness={0.2} />
+      </mesh>
+      <mesh position={[0, 0.19, 0.615]}>
+        <boxGeometry args={[0.58, 0.1, 0.035]} />
+        <meshStandardMaterial color="#d9edf2" roughness={0.25} metalness={0.15} />
+      </mesh>
+      <mesh position={[0, 0.18, -0.6]} castShadow>
+        <boxGeometry args={[0.78, 0.08, 0.08]} />
+        <meshStandardMaterial color="#0c2945" roughness={0.5} metalness={0.3} />
+      </mesh>
+      {[-0.46, 0.46].flatMap((x) => [-0.38, 0.38].map((z) => (
+        <group key={`${x}-${z}`} position={[x, -0.03, z]} rotation={[0, 0, Math.PI / 2]}>
+          <mesh castShadow>
+            <cylinderGeometry args={[0.1, 0.1, 0.08, 18]} />
+            <meshStandardMaterial color="#101820" roughness={0.8} />
+          </mesh>
+          <mesh position={[x < 0 ? -0.045 : 0.045, 0, 0]} rotation={[0, Math.PI / 2, 0]}>
+            <cylinderGeometry args={[0.045, 0.045, 0.012, 16]} />
+            <meshStandardMaterial color="#c9d2d8" metalness={0.7} roughness={0.25} />
+          </mesh>
+        </group>
+      )))}
+      {[-0.28, 0.28].map((x) => (
+        <mesh key={x} position={[x, 0.1, 0.615]}>
+          <sphereGeometry args={[0.045, 14, 10]} />
+          <meshStandardMaterial color="#fff1b8" emissive="#ffd166" emissiveIntensity={0.45} />
+        </mesh>
+      ))}
     </group>
   )
 }

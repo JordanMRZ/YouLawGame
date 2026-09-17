@@ -153,6 +153,7 @@ export interface Cosmetics {
   watch: boolean
   car: boolean
   tank: boolean
+  bugatti: boolean
 }
 
 export interface ShopItem {
