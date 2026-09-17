@@ -243,6 +243,80 @@ export function PlayerVisual({
         <Leg look={look} />
       </group>
       <Backpack cosmetics={cosmetics} />
+      {cosmetics.car && <Car />}
+      {cosmetics.tank && <Tank />}
+    </group>
+  )
+}
+
+function Car() {
+  return (
+    <group position={[0, 0.2, 0.12]} rotation={[0, 0, 0]}>
+      <mesh position={[0, 0.08, 0]} castShadow>
+        <boxGeometry args={[0.92, 0.34, 1.05]} />
+        <meshStandardMaterial color="#d64545" roughness={0.6} />
+      </mesh>
+      <mesh position={[0, 0.35, -0.12]} castShadow>
+        <boxGeometry args={[0.54, 0.3, 0.42]} />
+        <meshStandardMaterial color="#ef8354" roughness={0.55} />
+      </mesh>
+      <mesh position={[0, 0.36, 0.11]}>
+        <boxGeometry args={[0.42, 0.16, 0.012]} />
+        <meshStandardMaterial color="#bde0fe" roughness={0.2} metalness={0.15} />
+      </mesh>
+      <mesh position={[0, 0.47, 0.2]} rotation={[Math.PI / 2, 0, 0]}>
+        <torusGeometry args={[0.11, 0.018, 10, 20]} />
+        <meshStandardMaterial color="#202124" roughness={0.55} />
+      </mesh>
+      {[-0.48, 0.48].flatMap((x) => [-0.32, 0.32].map((z) => (
+        <group key={`${x}-${z}`} position={[x, -0.04, z]} rotation={[0, 0, Math.PI / 2]}>
+          <mesh castShadow>
+            <cylinderGeometry args={[0.1, 0.1, 0.08, 16]} />
+            <meshStandardMaterial color="#202124" roughness={0.8} />
+          </mesh>
+          <mesh position={[x < 0 ? -0.045 : 0.045, 0, 0]} rotation={[0, Math.PI / 2, 0]}>
+            <cylinderGeometry args={[0.045, 0.045, 0.012, 16]} />
+            <meshStandardMaterial color="#b8c0c8" metalness={0.55} roughness={0.35} />
+          </mesh>
+        </group>
+      )))}
+    </group>
+  )
+}
+
+function Tank() {
+  return (
+    <group position={[0, 0.22, 0.12]}>
+      <mesh position={[0, 0.08, 0]} castShadow>
+        <boxGeometry args={[1.05, 0.34, 1.08]} />
+        <meshStandardMaterial color="#526b3f" roughness={0.9} />
+      </mesh>
+      {[-0.57, 0.57].map((x) => (
+        <group key={x} position={[x, 0.02, 0]}>
+          <mesh castShadow>
+            <boxGeometry args={[0.16, 0.28, 0.98]} />
+            <meshStandardMaterial color="#293524" roughness={1} />
+          </mesh>
+          {[-0.3, 0, 0.3].map((z) => (
+            <mesh key={z} position={[0, -0.02, z]} rotation={[0, Math.PI / 2, 0]}>
+              <cylinderGeometry args={[0.095, 0.095, 0.025, 14]} />
+              <meshStandardMaterial color="#111712" roughness={1} />
+            </mesh>
+          ))}
+        </group>
+      ))}
+      <mesh position={[0, 0.34, -0.02]} castShadow>
+        <cylinderGeometry args={[0.3, 0.3, 0.16, 12]} />
+        <meshStandardMaterial color="#627c4a" roughness={0.85} />
+      </mesh>
+      <mesh position={[0, 0.43, 0.22]} rotation={[Math.PI / 2, 0, 0]} castShadow>
+        <cylinderGeometry args={[0.1, 0.1, 0.14, 12]} />
+        <meshStandardMaterial color="#405532" roughness={0.9} />
+      </mesh>
+      <mesh position={[0, 0.43, 0.62]} rotation={[Math.PI / 2, 0, 0]} castShadow>
+        <cylinderGeometry args={[0.055, 0.055, 0.72, 12]} />
+        <meshStandardMaterial color="#293524" roughness={0.85} />
+      </mesh>
     </group>
   )
 }

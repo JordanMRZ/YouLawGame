@@ -13,6 +13,8 @@ export const defaultCosmetics: Cosmetics = {
   backpack: 'none',
   scarf: false,
   watch: false,
+  car: false,
+  tank: false,
 }
 
 export const starterOwned = [
@@ -83,6 +85,10 @@ export const shopCatalog: ShopItem[] = [
   { id: 'scarf-off', name: 'Sin bufanda', category: 'extra', price: 0, patch: { scarf: false } },
   { id: 'watch-on', name: 'Reloj', category: 'extra', price: 30, patch: { watch: true } },
   { id: 'watch-off', name: 'Sin reloj', category: 'extra', price: 0, patch: { watch: false } },
+  { id: 'car-on', name: 'Carro', category: 'extra', price: 70, patch: { car: true }, swatch: '#d64545' },
+  { id: 'car-off', name: 'Sin carro', category: 'extra', price: 0, patch: { car: false }, swatch: '#d7e8f3' },
+  { id: 'tank-on', name: 'Tanque de guerra', category: 'extra', price: 110, patch: { tank: true }, swatch: '#526b3f' },
+  { id: 'tank-off', name: 'Sin tanque', category: 'extra', price: 0, patch: { tank: false }, swatch: '#d7e8f3' },
 ]
 
 export const shopCategories: { id: ShopItem['category']; label: string; icon: string }[] = [
@@ -117,6 +123,6 @@ export function itemSwatch(item: ShopItem) {
     (patch.glasses === 'sun' ? '#1b1b1b' : patch.glasses === 'round' ? '#7ec8f5' : patch.glasses === 'square' ? '#1f6f8b' : undefined) ??
     (patch.hat === 'cap' ? '#1f6f8b' : patch.hat === 'beanie' ? '#3ee0b3' : patch.hat === 'bow' ? '#ff6b9d' : undefined) ??
     (patch.backpack === 'pack' ? '#2e4a62' : patch.backpack === 'satchel' ? '#8d6e4c' : undefined) ??
-    (patch.scarf ? '#d64545' : patch.watch ? '#ffd166' : '#d7e8f3')
+    (patch.scarf ? '#d64545' : patch.watch ? '#ffd166' : patch.car ? '#d64545' : patch.tank ? '#526b3f' : '#d7e8f3')
   )
 }

@@ -88,6 +88,24 @@ export function WorldPlatform({ def, accent }: { def: PlatformDef; accent: strin
           <meshLambertMaterial color="#ffffff" />
         </mesh>
       )}
+
+      {kind === 'vanishing' && !vanished && (
+  <group position={[0, h / 2 + 0.12, 0]}>
+    <mesh castShadow>
+      <coneGeometry args={[w * 0.12, h * 0.24, 3]} />
+      <meshStandardMaterial
+        color="#ffd166"
+        emissive="#ffb703"
+        emissiveIntensity={0.4}
+      />
+    </mesh>
+
+    <mesh position={[0, -0.09, 0]} castShadow>
+      <boxGeometry args={[0.06, h * 0.14, 0.06]} />
+      <meshStandardMaterial color="#fff7d6" />
+    </mesh>
+  </group>
+)}
     </RigidBody>
   )
 }

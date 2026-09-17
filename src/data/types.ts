@@ -151,6 +151,8 @@ export interface Cosmetics {
   backpack: PackStyle
   scarf: boolean
   watch: boolean
+  car: boolean
+  tank: boolean
 }
 
 export interface ShopItem {
