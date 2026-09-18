@@ -45,7 +45,8 @@ interface GameState {
   tutorialStep: number
   coachLine: string | null
   burst: { at: Vec3; kind: 'correct' | 'wrong' | 'checkpoint' | 'goal' | 'coin' } | null
-  startLevel: (id: number) => void
+  editorReturn: boolean
+  startLevel: (id: number, opts?: { fromEditor?: boolean }) => void
   backToHub: () => void
   setPhase: (phase: GamePhase) => void
   setSelectedLevel: (id: number) => void
@@ -117,16 +118,19 @@ export const useGameStore = create<GameState>((set, get) => ({
   tutorialStep: 0,
   coachLine: null,
   burst: null,
+  editorReturn: false,
 
-  startLevel: (id) => {
+  startLevel: (id, opts) => {
+    const fromEditor = opts?.fromEditor ?? get().editorReturn
     unloadLevel(id)
     const level = getLevel(id)
     audio.unlock()
     audio.stopSpeech()
     set({
       sessionId: get().sessionId + 1,
-      phase: id === 1 ? 'tutorial' : 'intro',
+      phase: fromEditor ? 'countdown' : id === 1 ? 'tutorial' : 'intro',
       levelId: id,
+      editorReturn: fromEditor,
       lives: 3,
       streak: 0,
       bestStreak: 0,
@@ -156,8 +160,10 @@ export const useGameStore = create<GameState>((set, get) => ({
 
   backToHub: () => {
     audio.stopSpeech()
+    const toEditor = get().editorReturn
     set({
-      phase: 'hub',
+      phase: toEditor ? 'editor' : 'hub',
+      editorReturn: toEditor,
       prompt: null,
       toast: null,
       results: null,

@@ -28,6 +28,7 @@ export type AnimState = 'idle' | 'run' | 'jump' | 'fall' | 'land' | 'victory'
 
 export type GamePhase =
   | 'hub'
+  | 'editor'
   | 'intro'
   | 'tutorial'
   | 'countdown'

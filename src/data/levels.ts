@@ -1,3 +1,4 @@
+import { peekDraft } from './editorDrafts'
 import type { LevelDef, WorldId } from './types'
 import { createLevel01 } from './levels/level01'
 import { createLevel02 } from './levels/level02'
@@ -93,13 +94,23 @@ for (let id = 12; id <= LEVEL_COUNT; id += 1) {
 
 const cache = new Map<number, LevelDef>()
 
-export function getLevel(id: number): LevelDef {
+function buildFactoryLevel(id: number): LevelDef {
   const existing = cache.get(id)
   if (existing) return existing
   const factory = factories[id] ?? (() => createTemplateLevel(id, worldForLevel(id), localLevelForId(id)))
   const level = factory()
   cache.set(id, level)
   return level
+}
+
+export function getFactoryLevel(id: number): LevelDef {
+  return structuredClone(buildFactoryLevel(id))
+}
+
+export function getLevel(id: number): LevelDef {
+  const draft = peekDraft(id)
+  if (draft) return structuredClone(draft)
+  return buildFactoryLevel(id)
 }
 
 export function unloadLevel(id: number) {

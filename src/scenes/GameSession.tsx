@@ -17,7 +17,7 @@ export function GameSession() {
       s.phase === 'countdown' ||
       Boolean(s.mistake),
   )
-  const level = useMemo(() => getLevel(levelId), [levelId])
+  const level = useMemo(() => getLevel(levelId), [levelId, sessionId])
 
   return (
     <Physics key={`${levelId}-${sessionId}`} gravity={[0, -26, 0]} interpolate paused={paused} timeStep="vary">

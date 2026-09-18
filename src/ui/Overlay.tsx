@@ -2,7 +2,9 @@ import { useEffect, useState } from 'react'
 import { audio } from '../audio/audioManager'
 import { getLevel, levelCatalog, LEVEL_COUNT } from '../data/levels'
 import { formatTime } from '../game/scoring'
+import { useEditorStore } from '../store/editorStore'
 import { useGameStore } from '../store/gameStore'
+import { EditorPanel } from './EditorPanel'
 import { ShopPanel } from './ShopPanel'
 import { TutorialCard } from './TutorialCard'
 
@@ -13,6 +15,7 @@ export function Overlay() {
     const onKey = (event: KeyboardEvent) => {
       const state = useGameStore.getState()
       if (event.code === 'Escape') {
+        if (state.phase === 'editor') return
         if (state.mistake) return
         if (state.shopOpen) {
           state.setShopOpen(false)
@@ -58,7 +61,8 @@ export function Overlay() {
   return (
     <div className="overlay">
       {phase === 'hub' && <HubChrome />}
-      {phase !== 'hub' && phase !== 'intro' && phase !== 'tutorial' && <HUD />}
+      {phase === 'editor' && <EditorPanel />}
+      {phase !== 'hub' && phase !== 'intro' && phase !== 'tutorial' && phase !== 'editor' && <HUD />}
       {phase === 'tutorial' && <TutorialCard />}
       {phase === 'intro' && <IntroCard />}
       {phase === 'countdown' && <Countdown />}
@@ -90,6 +94,15 @@ function HubChrome() {
         <div className="hub-actions">
           <span className="xp-chip">{save.wallet} 🪙</span>
           <span className="xp-chip xp">{save.xp} XP</span>
+          <button
+            type="button"
+            onClick={() => {
+              audio.unlock()
+              useEditorStore.getState().openEditor(selected)
+            }}
+          >
+            Editor
+          </button>
           <button type="button" onClick={() => useGameStore.getState().setShopOpen(true)}>
             Tienda
           </button>
@@ -230,6 +243,7 @@ function Countdown() {
 }
 
 function PauseCard() {
+  const editorReturn = useGameStore((s) => s.editorReturn)
   return (
     <div className="modal">
       <h2>Paused</h2>
@@ -237,7 +251,7 @@ function PauseCard() {
         Resume
       </button>
       <button type="button" onClick={() => useGameStore.getState().backToHub()}>
-        Hub
+        {editorReturn ? 'Editor' : 'Hub'}
       </button>
     </div>
   )
@@ -246,6 +260,7 @@ function PauseCard() {
 function ResultsCard() {
   const results = useGameStore((s) => s.results)
   const levelId = useGameStore((s) => s.levelId)
+  const editorReturn = useGameStore((s) => s.editorReturn)
   if (!results) return null
   return (
     <div className="modal">
@@ -259,7 +274,7 @@ function ResultsCard() {
       </ul>
       <p className="xp-chip">+{results.xp} XP</p>
       <div className="row">
-        {levelId < LEVEL_COUNT && (
+        {!editorReturn && levelId < LEVEL_COUNT && (
           <button type="button" className="primary" onClick={() => useGameStore.getState().startLevel(levelId + 1)}>
             Next level
           </button>
@@ -268,7 +283,7 @@ function ResultsCard() {
           Replay
         </button>
         <button type="button" onClick={() => useGameStore.getState().backToHub()}>
-          Hub
+          {editorReturn ? 'Editor' : 'Hub'}
         </button>
       </div>
     </div>
@@ -293,6 +308,7 @@ function ExplainCard() {
 function FailCard() {
   const levelId = useGameStore((s) => s.levelId)
   const lastExplanation = useGameStore((s) => s.lastExplanation)
+  const editorReturn = useGameStore((s) => s.editorReturn)
   return (
     <div className="modal">
       <h2>LEVEL FAILED</h2>
@@ -303,7 +319,7 @@ function FailCard() {
           Restart
         </button>
         <button type="button" onClick={() => useGameStore.getState().backToHub()}>
-          Hub
+          {editorReturn ? 'Editor' : 'Hub'}
         </button>
       </div>
     </div>

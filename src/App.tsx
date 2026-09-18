@@ -2,14 +2,18 @@ import { Canvas } from '@react-three/fiber'
 import { Suspense, useCallback, useRef, useState } from 'react'
 import { Color } from 'three'
 import { CanvasErrorBoundary } from './components/CanvasErrorBoundary'
+import { EditorWorld } from './scenes/EditorWorld'
 import { GameSession } from './scenes/GameSession'
 import { HubWorld } from './scenes/HubWorld'
+import { useEditorStore } from './store/editorStore'
 import { useGameStore } from './store/gameStore'
 import { Overlay } from './ui/Overlay'
 
 export default function App() {
   const phase = useGameStore((s) => s.phase)
   const inHub = phase === 'hub'
+  const inEditor = phase === 'editor'
+  const editorLevelId = useEditorStore((s) => s.levelId)
   const [canvasKey, setCanvasKey] = useState(0)
   const recovering = useRef(false)
 
@@ -48,6 +52,10 @@ export default function App() {
         >
           {inHub ? (
             <HubWorld />
+          ) : inEditor ? (
+            <Suspense fallback={null}>
+              <EditorWorld key={editorLevelId} />
+            </Suspense>
           ) : (
             <Suspense fallback={null}>
               <GameSession />
