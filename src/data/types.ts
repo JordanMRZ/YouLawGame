@@ -88,6 +88,12 @@ export interface ObstacleDef {
   size?: Vec3
   speed?: number
   color?: string
+  motion?: {
+    axis: 'x' | 'y' | 'z'
+    amplitude: number
+    speed?: number
+    phase?: number
+  }
 }
 
 export interface CoinDef {

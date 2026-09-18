@@ -124,12 +124,27 @@ function Spinner({ def }: { def: ObstacleDef }) {
 
 function MovingBlock({ def }: { def: ObstacleDef }) {
   const ref = useRef<RapierRigidBody>(null)
-  const speed = def.speed ?? 1.2
+  const speed = def.motion?.speed ?? def.speed ?? 1.5
   const size = def.size ?? [1.6, 1.6, 1.6]
+  const axis = def.motion?.axis ?? 'x'
+  const amplitude = def.motion?.amplitude ?? 3.2
+  const phase = def.motion?.phase ?? 0
+
   useFrame((state) => {
-    const x = def.position[0] + Math.sin(state.clock.elapsedTime * speed) * 3.2
-    ref.current?.setNextKinematicTranslation({ x, y: def.position[1], z: def.position[2] })
+    const t = state.clock.elapsedTime * speed + phase
+    const next = [...def.position] as [number, number, number]
+
+    if (axis === 'x') {
+      next[0] = def.position[0] + Math.sin(t) * amplitude
+    } else if (axis === 'y') {
+      next[1] = def.position[1] + Math.sin(t) * amplitude
+    } else {
+      next[2] = def.position[2] + Math.sin(t) * amplitude
+    }
+
+    ref.current?.setNextKinematicTranslation({ x: next[0], y: next[1], z: next[2] })
   })
+
   return (
     <RigidBody ref={ref} type="kinematicPosition" position={def.position} colliders="cuboid">
       <mesh castShadow>

@@ -175,16 +175,28 @@ export class TrackBuilder {
     return this
   }
 
-  movingBlock(offsetX = 0) {
-    this.obstacles.push({
-      id: this.id('mb'),
-      kind: 'movingBlock',
-      position: [this.x + offsetX, this.y + 1.3, this.z + 1],
-      size: [1.6, 1.6, 1.6],
+  movingBlock(
+  offsetX = 0,
+  offsetY = 1.3,
+  offsetZ = 1,
+  amplitude = 3.2,
+  axis: 'x' | 'y' | 'z' = 'x',
+) {
+  this.obstacles.push({
+    id: this.id('mb'),
+    kind: 'movingBlock',
+    position: [this.x + offsetX, this.y + offsetY, this.z + offsetZ],
+    size: [1.6, 1.6, 1.6],
+    speed: 1.2,
+    motion: {
+      axis,
+      amplitude,
       speed: 1.2,
-    })
-    return this
-  }
+      phase: 0,
+    },
+  })
+  return this
+}
 
   challenge(draft: ChallengeDraft) {
     const length = draft.length ?? 10
