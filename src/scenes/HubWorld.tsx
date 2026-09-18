@@ -1,9 +1,9 @@
 import { useFrame } from '@react-three/fiber'
-import { useMemo, useRef, type ReactNode } from 'react'
+import { useMemo, useRef, useState, type ReactNode } from 'react'
 import { Group } from 'three'
 import { WorldLabel } from '../components/WorldLabel'
-import { levelCatalog } from '../data/levels'
-import { palettes } from '../data/worlds'
+import { LEVELS_PER_WORLD, levelCatalog, WORLD_COUNT, worldOrder } from '../data/levels'
+import { palettes, worldMeta } from '../data/worlds'
 import { PlayerVisual } from '../player/PlayerVisual'
 import { useGameStore } from '../store/gameStore'
 import { HubCamera } from './HubCamera'
@@ -19,16 +19,23 @@ export function HubWorld() {
   const shopOpen = useGameStore((s) => s.shopOpen)
   const stars = useGameStore((s) => s.save.levels)
   const group = useRef<Group>(null)
+  const [selectedWorld, setSelectedWorld] = useState<number | null>(null)
 
   const nodes = useMemo(
     () =>
       levelCatalog.map((item, index) => {
-        const t = (index / 10) * Math.PI * 2 - Math.PI * 0.5
+        const worldIndex = Math.floor(index / LEVELS_PER_WORLD)
+        const localIndex = index % LEVELS_PER_WORLD
+        const worldAngle = (worldIndex / WORLD_COUNT) * Math.PI * 2 - Math.PI * 0.5
+        const localAngle = (localIndex / LEVELS_PER_WORLD) * Math.PI * 2 - Math.PI * 0.5
+        const centerX = Math.cos(worldAngle) * 14
+        const centerZ = -5.2 + Math.sin(worldAngle) * 14
         return {
           ...item,
-          x: Math.cos(t) * 11.2,
+          x: centerX + Math.cos(localAngle) * 2.45,
           y: 0.28,
-          z: -5.2 + Math.sin(t) * 11.2,
+          z: centerZ + Math.sin(localAngle) * 2.45,
+          worldIndex,
           locked: item.id > unlocked,
           starCount: stars[String(item.id)]?.stars ?? 0,
         }
@@ -42,7 +49,7 @@ export function HubWorld() {
 
   return (
     <>
-      <HubCamera />
+      <HubCamera selectedWorld={selectedWorld} />
       {shopOpen ? (
         <ShopStage />
       ) : (
@@ -76,10 +83,23 @@ export function HubWorld() {
       </Turntable>
       {!shopOpen && (
         <group ref={group}>
-          <LevelPath nodes={nodes} />
-          {nodes.map((node) => (
-            <HubPad key={node.id} node={node} selected={selected === node.id} />
-          ))}
+          {worldOrder.map((world, index) => {
+            const angle = (index / WORLD_COUNT) * Math.PI * 2 - Math.PI * 0.5
+            return (
+              <WorldMap
+                key={world}
+                position={[Math.cos(angle) * 14, -0.34, -5.2 + Math.sin(angle) * 14]}
+                color={palettes[world].ground}
+                title={worldMeta[world].title}
+                selected={selectedWorld === index}
+                onSelect={() => setSelectedWorld((current) => (current === index ? null : index))}
+              />
+            )
+          })}
+          {selectedWorld !== null && <LevelPath nodes={nodes} worldIndex={selectedWorld} />}
+          {selectedWorld !== null && nodes
+            .filter((node) => node.worldIndex === selectedWorld)
+            .map((node) => <HubPad key={node.id} node={node} selected={selected === node.id} />)}
         </group>
       )}
       {!shopOpen && <WorldLabel text="YOU LAW GAME" position={[0, 4.8, -5.2]} width={12} color="#fff6d8" />}
@@ -133,25 +153,54 @@ function Turntable({ children, shopOpen }: { children: ReactNode; shopOpen: bool
 
 function LevelPath({
   nodes,
+  worldIndex,
 }: {
   nodes: { x: number; z: number; locked: boolean }[]
+  worldIndex: number
 }) {
-  const first = nodes[0]
   return (
     <group>
-      {first && <PathStone from={[0, -1.6]} to={[first.x, first.z]} open />}
-      {nodes.slice(0, -1).map((node, index) => {
-        const next = nodes[index + 1]
-        if (!next) return null
-        return (
-          <PathStone
-            key={`${node.x}-${next.x}`}
-            from={[node.x, node.z]}
-            to={[next.x, next.z]}
-            open={!next.locked}
-          />
-        )
-      })}
+      {nodes
+        .slice(worldIndex * LEVELS_PER_WORLD, (worldIndex + 1) * LEVELS_PER_WORLD)
+        .slice(0, -1)
+        .map((node, index, worldNodes) => {
+          const next = worldNodes[index + 1]
+          if (!next) return null
+          return <PathStone key={`${node.x}-${next.x}`} from={[node.x, node.z]} to={[next.x, next.z]} open={!next.locked} />
+        })}
+    </group>
+  )
+}
+
+function WorldMap({
+  position,
+  color,
+  title,
+  selected,
+  onSelect,
+}: {
+  position: [number, number, number]
+  color: string
+  title: string
+  selected: boolean
+  onSelect: () => void
+}) {
+  return (
+    <group position={position} scale={selected ? 1.08 : 1} onClick={(event) => {
+      event.stopPropagation()
+      onSelect()
+    }}>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+        <circleGeometry args={[3.75, 32]} />
+        <meshLambertMaterial color={color} />
+      </mesh>
+      {selected && (
+        <mesh position={[0, 0.2, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+          <torusGeometry args={[3.92, 0.1, 10, 28]} />
+          <meshBasicMaterial color="#ffffff" />
+        </mesh>
+      )}
+      <WorldLabel text={title} position={[0, 0.85, -3.15]} width={5.8} color="#fff6d8" />
     </group>
   )
 }
@@ -188,6 +237,7 @@ function HubPad({
 }: {
   node: {
     id: number
+    localLevel: number
     world: keyof typeof palettes
     x: number
     y: number
@@ -220,7 +270,7 @@ function HubPad({
         document.body.style.cursor = 'default'
       }}
     >
-      <mesh castShadow>
+      <mesh>
         <cylinderGeometry args={[1.42, 1.62, 0.58, 16]} />
         <meshLambertMaterial color={node.locked ? '#6b7280' : '#7c5a36'} />
       </mesh>
@@ -247,7 +297,7 @@ function HubPad({
         </mesh>
       )}
       <WorldLabel
-        text={node.locked ? 'X' : String(node.id).padStart(2, '0')}
+        text={node.locked ? 'X' : String(node.localLevel).padStart(2, '0')}
         position={[0, 1.55, 0]}
         width={2.2}
       />

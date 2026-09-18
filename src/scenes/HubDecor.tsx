@@ -87,47 +87,47 @@ function Hills() {
   const pines = useMemo(
     () =>
       [
-        [-18, -22, 1.15],
-        [-14.5, -24.5, 0.95],
-        [-11, -21.5, 1.35],
-        [-7.2, -26, 1.05],
-        [-3, -23.5, 1.4],
-        [2.4, -25, 1.2],
-        [6.8, -22.8, 0.9],
-        [11.2, -25.5, 1.3],
-        [15.4, -23, 1.1],
-        [19, -26.2, 1.45],
-        [-20, -18, 0.8],
-        [18.5, -18.5, 0.85],
+        [-24, -31, 1.15],
+        [-19, -34, 0.95],
+        [-13, -32, 1.35],
+        [-7, -35, 1.05],
+        [0, -34, 1.4],
+        [7, -35, 1.2],
+        [13, -32, 0.9],
+        [19, -34, 1.3],
+        [24, -31, 1.1],
+        [-26, -24, 1.45],
+        [-25, -14, 0.8],
+        [25, -14, 0.85],
       ] as [number, number, number][],
     [],
   )
   return (
     <group>
-      <mesh position={[-14, -1.6, -24]} scale={[1.6, 0.55, 1.15]} castShadow>
+      <mesh position={[-14, -2.2, -32]} scale={[1.6, 0.55, 1.15]} castShadow>
         <sphereGeometry args={[7.4, 18, 12]} />
         <meshLambertMaterial color="#2d8f58" />
       </mesh>
-      <mesh position={[0, -2.4, -28]} scale={[2.2, 0.48, 1.3]} castShadow>
+      <mesh position={[0, -3, -36]} scale={[2.2, 0.48, 1.3]} castShadow>
         <sphereGeometry args={[8.6, 18, 12]} />
         <meshLambertMaterial color="#247a4a" />
       </mesh>
-      <mesh position={[15, -1.8, -25]} scale={[1.7, 0.52, 1.2]} castShadow>
+      <mesh position={[15, -2.4, -33]} scale={[1.7, 0.52, 1.2]} castShadow>
         <sphereGeometry args={[7.8, 18, 12]} />
         <meshLambertMaterial color="#318f54" />
       </mesh>
-      <mesh position={[-8, 0.4, -22]} scale={[1.1, 0.7, 1]} castShadow>
+      <mesh position={[-8, 0.4, -26]} scale={[1.1, 0.7, 1]} castShadow>
         <sphereGeometry args={[4.2, 16, 12]} />
         <meshLambertMaterial color="#36a35e" />
       </mesh>
-      <mesh position={[9.5, 0.2, -23]} scale={[1.2, 0.65, 1]} castShadow>
+      <mesh position={[9.5, 0.2, -26]} scale={[1.2, 0.65, 1]} castShadow>
         <sphereGeometry args={[4.6, 16, 12]} />
         <meshLambertMaterial color="#2f9a56" />
       </mesh>
-      <BushClump position={[-16.5, 2.1, -21]} />
-      <BushClump position={[-6.4, 2.6, -20.5]} />
-      <BushClump position={[5.8, 2.4, -21.2]} />
-      <BushClump position={[16.2, 2.0, -22]} />
+      <BushClump position={[-22, 2.1, -29]} />
+      <BushClump position={[-12, 2.6, -32]} />
+      <BushClump position={[12, 2.4, -32]} />
+      <BushClump position={[22, 2.0, -40]} />
       {pines.map(([x, z, s]) => (
         <Pine key={`${x}-${z}`} position={[x, 1.1, z]} scale={s} />
       ))}

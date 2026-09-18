@@ -22,7 +22,7 @@ export const palettes: Record<WorldId, LevelPalette> = {
     skyTop: '#7ec8f5',
     skyBottom: '#e7f6ee',
     ambient: '#bfe8d2',
-    ground: '#3cbf7a',
+    ground: '#037237',
     accent: '#f4d35e',
     water: '#3aa0c8',
   },

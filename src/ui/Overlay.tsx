@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { audio } from '../audio/audioManager'
-import { getLevel, levelCatalog } from '../data/levels'
+import { getLevel, levelCatalog, LEVEL_COUNT } from '../data/levels'
 import { formatTime } from '../game/scoring'
 import { useGameStore } from '../store/gameStore'
 import { ShopPanel } from './ShopPanel'
@@ -40,7 +40,7 @@ export function Overlay() {
       if (state.phase === 'hub') {
         if (state.shopOpen) return
         if (event.code === 'ArrowRight' || event.code === 'KeyD') {
-          const next = Math.min(10, state.selectedLevel + 1)
+          const next = Math.min(LEVEL_COUNT, state.selectedLevel + 1)
           if (next <= state.save.unlockedLevel) state.setSelectedLevel(next)
         }
         if (event.code === 'ArrowLeft' || event.code === 'KeyA') {
@@ -259,7 +259,7 @@ function ResultsCard() {
       </ul>
       <p className="xp-chip">+{results.xp} XP</p>
       <div className="row">
-        {levelId < 10 && (
+        {levelId < LEVEL_COUNT && (
           <button type="button" className="primary" onClick={() => useGameStore.getState().startLevel(levelId + 1)}>
             Next level
           </button>
@@ -318,7 +318,7 @@ function CreditsCard() {
     <div className="modal wide">
       <p className="kicker">CONGRATULATIONS</p>
       <h2>ENGLISH BRIDGE</h2>
-      <h3>10 / 10 LEVELS</h3>
+      <h3>50 LEVELS · 10 WORLDS</h3>
       <ul className="stats">
         <li>Run time {formatTime(results.time)}</li>
         <li>Accuracy {Math.round(results.accuracy * 100)}%</li>

@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { audio } from '../audio/audioManager'
-import { getLevel, unloadLevel } from '../data/levels'
+import { getLevel, LEVEL_COUNT, unloadLevel } from '../data/levels'
 import { itemById } from '../data/shop'
 import { loadSave, persistSave } from '../data/storage'
 import type { Cosmetics, GamePhase, RunResults, SaveData, Vec3 } from '../data/types'
@@ -88,7 +88,7 @@ function persist(save: SaveData) {
 
 export const useGameStore = create<GameState>((set, get) => ({
   phase: 'hub',
-  selectedLevel: Math.min(initialSave.unlockedLevel, 10),
+  selectedLevel: Math.min(initialSave.unlockedLevel, LEVEL_COUNT),
   levelId: 1,
   sessionId: 0,
   lives: 3,
@@ -372,7 +372,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       bestAccuracy: Math.max(prev?.bestAccuracy ?? 0, results.accuracy),
       completed: true,
     }
-    if (state.levelId >= save.unlockedLevel && state.levelId < 10) {
+    if (state.levelId >= save.unlockedLevel && state.levelId < LEVEL_COUNT) {
       save.unlockedLevel = state.levelId + 1
     }
     save.totals = {
@@ -385,7 +385,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     set({
       save,
       results,
-      phase: state.levelId === 10 ? 'credits' : 'results',
+      phase: state.levelId === LEVEL_COUNT ? 'credits' : 'results',
       prompt: null,
     })
   },
